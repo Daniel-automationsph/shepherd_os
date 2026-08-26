@@ -1,16 +1,53 @@
-import { MapContainer, TileLayer, CircleMarker, Tooltip as LeafletTooltip } from 'react-leaflet'
+import { useEffect, useMemo, useRef } from 'react'
+import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { pinamalayanCenter } from '../data/mockData'
+import boundaries from '../data/pinamalayanBarangays.json'
 
-/// Real map of Pinamalayan using OpenStreetMap tiles (no API key required).
-/// Barangay coordinates in mockData are approximate placeholders — see the
-/// note in src/data/mockData.js.
-export default function BarangayMap({ barangays, selectedName, onSelect, height = 380 }) {
+/// Real barangay boundary polygons for Pinamalayan, Oriental Mindoro, sourced
+/// from PSA/PSGC administrative boundary data (via faeldon/philippines-json-maps,
+/// itself built from altcoder/philippines-psgc-shapefiles — official PSGC data
+/// as of Dec 2023). These are REAL surveyed boundaries, not placeholders,
+/// unlike the earlier point-marker version of this map.
+export default function BarangayMap({ barangays, selectedName, onSelect, height = 420 }) {
+  const dataByName = useMemo(() => {
+    const map = {}
+    for (const b of barangays) map[b.name] = b
+    return map
+  }, [barangays])
+
+  const geoJsonKey = useMemo(() => JSON.stringify([selectedName, barangays.map((b) => `${b.name}:${b.reached}`)]), [
+    selectedName,
+    barangays,
+  ])
+
+  function style(feature) {
+    const name = feature.properties.name
+    const b = dataByName[name]
+    const selected = name === selectedName
+    const reached = b?.reached
+    return {
+      fillColor: reached ? '#2f7d4f' : '#d94f36',
+      fillOpacity: selected ? 0.85 : reached ? 0.65 : 0.6,
+      color: selected ? '#1e2a22' : reached ? '#1f5c37' : '#8f3220',
+      weight: selected ? 3.5 : 1.8,
+    }
+  }
+
+  function onEachFeature(feature, layer) {
+    const name = feature.properties.name
+    layer.bindTooltip(name, { sticky: true, direction: 'top' })
+    layer.on({
+      click: () => onSelect && onSelect(dataByName[name] || { name, reached: false }),
+      mouseover: (e) => e.target.setStyle({ weight: 3 }),
+      mouseout: (e) => e.target.setStyle(style(feature)),
+    })
+  }
+
   return (
     <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}>
       <MapContainer
-        center={pinamalayanCenter}
-        zoom={12.2}
+        center={[13.033, 121.485]}
+        zoom={12}
         scrollWheelZoom={true}
         style={{ height, width: '100%', background: 'var(--surface-muted)' }}
       >
@@ -18,30 +55,8 @@ export default function BarangayMap({ barangays, selectedName, onSelect, height 
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {barangays.map((b) => {
-          const selected = b.name === selectedName
-          const color = b.reached ? '#2f7d4f' : '#b3432d'
-          return (
-            <CircleMarker
-              key={b.name}
-              center={[b.lat, b.lng]}
-              radius={selected ? 11 : 8}
-              pathOptions={{
-                color: selected ? '#1e2a22' : '#ffffff',
-                weight: selected ? 2.5 : 2,
-                fillColor: color,
-                fillOpacity: b.reached ? 0.9 : 0.65,
-              }}
-              eventHandlers={{
-                click: () => onSelect && onSelect(b),
-              }}
-            >
-              <LeafletTooltip direction="top" offset={[0, -8]}>
-                {b.name}
-              </LeafletTooltip>
-            </CircleMarker>
-          )
-        })}
+        <GeoJSON key={geoJsonKey} data={boundaries} style={style} onEachFeature={onEachFeature} />
+        <FitToBounds data={boundaries} />
       </MapContainer>
       <div
         style={{
@@ -58,10 +73,51 @@ export default function BarangayMap({ barangays, selectedName, onSelect, height 
       >
         <LegendRow color="#2f7d4f" label="Reached" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#b3432d" label="Not reached" />
+        <LegendRow color="#d94f36" label="Not reached" />
       </div>
     </div>
   )
+}
+
+function FitToBounds({ data }) {
+  const map = useMap()
+  const fitted = useRef(false)
+  useEffect(() => {
+    if (fitted.current) return
+    const layer = window.L ? null : null
+    // Compute bounds manually from raw GeoJSON coordinates to avoid needing
+    // a mounted layer reference.
+    let minLat = Infinity,
+      maxLat = -Infinity,
+      minLng = Infinity,
+      maxLng = -Infinity
+    const walk = (coords, depth) => {
+      if (depth === 0) {
+        const [lng, lat] = coords
+        if (lat < minLat) minLat = lat
+        if (lat > maxLat) maxLat = lat
+        if (lng < minLng) minLng = lng
+        if (lng > maxLng) maxLng = lng
+      } else {
+        coords.forEach((c) => walk(c, depth - 1))
+      }
+    }
+    for (const f of data.features) {
+      const depth = f.geometry.type === 'Polygon' ? 2 : 3
+      walk(f.geometry.coordinates, depth)
+    }
+    if (isFinite(minLat)) {
+      map.fitBounds(
+        [
+          [minLat, minLng],
+          [maxLat, maxLng],
+        ],
+        { padding: [16, 16] },
+      )
+    }
+    fitted.current = true
+  }, [map, data])
+  return null
 }
 
 function LegendRow({ color, label }) {
