@@ -21,9 +21,10 @@ import {
   updateKpi,
   deleteKpi,
   updateAreaPeopleStats,
+  updateAreaFinancialStats,
 } from '../data/api'
 
-const TABS = ['People', 'Area People', 'Life Groups', 'Financial', 'Barangays', 'Attention', 'KPIs']
+const TABS = ['People', 'Area People', 'Life Groups', 'Financial', 'Area Financial', 'Barangays', 'Attention', 'KPIs']
 
 export default function Admin() {
   const [tab, setTab] = useState('People')
@@ -53,6 +54,7 @@ export default function Admin() {
       {tab === 'Area People' && <AreaPeopleSection />}
       {tab === 'Life Groups' && <LifeGroupsSection />}
       {tab === 'Financial' && <FinancialSection />}
+      {tab === 'Area Financial' && <AreaFinancialSection />}
       {tab === 'Barangays' && <BarangaysSection />}
       {tab === 'Attention' && <AttentionSection />}
       {tab === 'KPIs' && <KpisSection />}
@@ -282,6 +284,10 @@ function AreaPeopleSheet({ area, onClose, onSaved }) {
     attendanceActual: area.attendanceActual,
     firstTimersTarget: area.firstTimersTarget,
     firstTimersActual: area.firstTimersActual,
+    fullTimeWorkers: area.fullTimeWorkers,
+    partTimeWorkers: area.partTimeWorkers,
+    volunteerWorkers: area.volunteerWorkers,
+    totalWorkers: area.totalWorkers,
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -331,6 +337,30 @@ function AreaPeopleSheet({ area, onClose, onSaved }) {
             </div>
           </div>
         ))}
+
+        <div>
+          <div className="label" style={{ marginBottom: 6 }}>
+            Workers
+          </div>
+          <div className="body-muted" style={{ marginBottom: 8, fontSize: 12 }}>
+            Headcounts only — the source data doesn't track a separate target vs. actual for workers.
+          </div>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+            <Field label="Full-time">
+              <input type="number" style={sheetInputStyle} value={form.fullTimeWorkers} onChange={set('fullTimeWorkers')} />
+            </Field>
+            <Field label="Part-time">
+              <input type="number" style={sheetInputStyle} value={form.partTimeWorkers} onChange={set('partTimeWorkers')} />
+            </Field>
+            <Field label="Volunteer">
+              <input type="number" style={sheetInputStyle} value={form.volunteerWorkers} onChange={set('volunteerWorkers')} />
+            </Field>
+            <Field label="Total Workers">
+              <input type="number" style={sheetInputStyle} value={form.totalWorkers} onChange={set('totalWorkers')} />
+            </Field>
+          </div>
+        </div>
+
         {error && <div style={{ color: 'var(--status-critical)', fontSize: 13 }}>{error}</div>}
         <SheetButton onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Save Changes'}
@@ -427,6 +457,10 @@ function LifeGroupSheet({ group, onClose, onSaved }) {
     leader: group?.leader || '',
     targetHeadcount: group?.targetHeadcount ?? '',
     actualHeadcount: group?.actualHeadcount ?? '',
+    leadersTarget: group?.leadersTarget ?? '',
+    leadersActual: group?.leadersActual ?? '',
+    attendanceTarget: group?.attendanceTarget ?? '',
+    attendanceActual: group?.attendanceActual ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -482,6 +516,34 @@ function LifeGroupSheet({ group, onClose, onSaved }) {
             </Field>
           </div>
         </div>
+        {group && (
+          <>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="LG Leaders — Target">
+                  <input type="number" style={sheetInputStyle} value={form.leadersTarget} onChange={set('leadersTarget')} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="LG Leaders — Actual">
+                  <input type="number" style={sheetInputStyle} value={form.leadersActual} onChange={set('leadersActual')} />
+                </Field>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="LG Attendance — Target">
+                  <input type="number" style={sheetInputStyle} value={form.attendanceTarget} onChange={set('attendanceTarget')} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="LG Attendance — Actual">
+                  <input type="number" style={sheetInputStyle} value={form.attendanceActual} onChange={set('attendanceActual')} />
+                </Field>
+              </div>
+            </div>
+          </>
+        )}
         {error && <div style={{ color: 'var(--status-critical)', fontSize: 13 }}>{error}</div>}
         <SheetButton onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : group ? 'Save Changes' : 'Add Life Group'}
@@ -621,6 +683,136 @@ function FinancialSheet({ category, onClose, onSaved }) {
         {error && <div style={{ color: 'var(--status-critical)', fontSize: 13 }}>{error}</div>}
         <SheetButton onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : category ? 'Save Changes' : 'Add Category'}
+        </SheetButton>
+      </div>
+    </FormSheet>
+  )
+}
+
+// ---------------------------------------------------------------------
+// Area Financial — edit-only, same pattern as Area People.
+// ---------------------------------------------------------------------
+function AreaFinancialSection() {
+  const { data, refetch } = useAppData()
+  const [sheet, setSheet] = useState(null)
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 8, overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 780 }}>
+          <thead>
+            <tr style={{ background: 'var(--surface-muted)' }}>
+              {['Area', 'Tithes', 'Offerings', 'Mission Offering', 'Pledges', 'Total Giving', ''].map((h) => (
+                <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.areaFinancialStats.map((a) => (
+              <tr key={a.id} style={{ borderTop: '1px solid var(--line)' }}>
+                <td style={{ padding: '10px 14px' }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.areaName}</div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)' }}>
+                    {a.isMainChurch ? 'Main Church' : 'Extension Church'}
+                  </span>
+                </td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{commas(a.tithesActual)}</td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{commas(a.offeringsActual)}</td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{commas(a.missionOfferingActual)}</td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{commas(a.pledgesActual)}</td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5, fontWeight: 700 }}>{commas(a.totalGivingActual)}</td>
+                <td style={{ padding: '10px 14px' }}>
+                  <IconButton title="Edit" onClick={() => setSheet(a)}>
+                    ✏️
+                  </IconButton>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {sheet && (
+        <AreaFinancialSheet
+          area={sheet}
+          onClose={() => setSheet(null)}
+          onSaved={async () => {
+            await refetch()
+            setSheet(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function AreaFinancialSheet({ area, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    tithesTarget: area.tithesTarget,
+    tithesActual: area.tithesActual,
+    offeringsTarget: area.offeringsTarget,
+    offeringsActual: area.offeringsActual,
+    missionOfferingTarget: area.missionOfferingTarget,
+    missionOfferingActual: area.missionOfferingActual,
+    pledgesTarget: area.pledgesTarget,
+    pledgesActual: area.pledgesActual,
+    totalGivingTarget: area.totalGivingTarget,
+    totalGivingActual: area.totalGivingActual,
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  function set(key) {
+    return (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    setError(null)
+    try {
+      await updateAreaFinancialStats(area.id, form)
+      await onSaved()
+    } catch (err) {
+      setError(err.message)
+      setSaving(false)
+    }
+  }
+
+  const groups = [
+    ['Tithes', 'tithesTarget', 'tithesActual'],
+    ['Offerings', 'offeringsTarget', 'offeringsActual'],
+    ['Mission Offering', 'missionOfferingTarget', 'missionOfferingActual'],
+    ['Pledges', 'pledgesTarget', 'pledgesActual'],
+    ['Total Giving', 'totalGivingTarget', 'totalGivingActual'],
+  ]
+
+  return (
+    <FormSheet title={area.areaName} subtitle={area.isMainChurch ? 'Main Church' : 'Extension Church'} onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {groups.map(([label, targetKey, actualKey]) => (
+          <div key={label}>
+            <div className="label" style={{ marginBottom: 6 }}>
+              {label} (₱)
+            </div>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="Target">
+                  <input type="number" style={sheetInputStyle} value={form[targetKey]} onChange={set(targetKey)} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Actual">
+                  <input type="number" style={sheetInputStyle} value={form[actualKey]} onChange={set(actualKey)} />
+                </Field>
+              </div>
+            </div>
+          </div>
+        ))}
+        {error && <div style={{ color: 'var(--status-critical)', fontSize: 13 }}>{error}</div>}
+        <SheetButton onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Changes'}
         </SheetButton>
       </div>
     </FormSheet>
