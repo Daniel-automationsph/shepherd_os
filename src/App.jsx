@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import { LoadingState, ErrorState } from './components/LoadingError'
 import { DataProvider, useAppData } from './context/DataContext'
+import { PeriodProvider } from './context/PeriodContext'
 import Dashboard from './screens/Dashboard'
 import PeopleGrowth from './screens/PeopleGrowth'
 import LifeGroups from './screens/LifeGroups'
@@ -26,9 +27,11 @@ function useWindowWidth() {
 export default function App() {
   return (
     <DataProvider>
-      <BrowserRouter>
-        <AppShell />
-      </BrowserRouter>
+      <PeriodProvider>
+        <BrowserRouter>
+          <AppShell />
+        </BrowserRouter>
+      </PeriodProvider>
     </DataProvider>
   )
 }
