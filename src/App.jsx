@@ -11,6 +11,7 @@ import Financial from './screens/Financial'
 import KpiCenter from './screens/KpiCenter'
 import Reports from './screens/Reports'
 import ManagementAttention from './screens/ManagementAttention'
+import Admin from './screens/Admin'
 
 function useWindowWidth() {
   const [width, setWidth] = useState(window.innerWidth)
@@ -56,6 +57,7 @@ function AppShell() {
             <Route path="/kpi-center" element={<KpiCenter />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/attention" element={<ManagementAttention />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         )}
         {mobile && !loading && !error && <MobileNav />}
