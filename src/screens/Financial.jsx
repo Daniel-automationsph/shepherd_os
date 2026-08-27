@@ -7,7 +7,7 @@ import { useAppData } from '../context/DataContext'
 
 export default function Financial() {
   const { data } = useAppData()
-  const { financialKpi: kpi, financialCategories } = data
+  const { financialKpi: kpi, financialCategories, areaFinancialStats } = data
   return (
     <div className="scroll-page">
       <SectionHeader title="Financial Status" subtitle="Monitoring only — not a replacement for full accounting" />
@@ -44,6 +44,54 @@ export default function Financial() {
           <TrendChart points={kpi.trend} color="var(--accent)" valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`} />
         </div>
       </div>
+
+      {areaFinancialStats && areaFinancialStats.length > 0 && (
+        <div className="card" style={{ marginTop: 20, padding: 8, overflowX: 'auto' }}>
+          <div style={{ padding: '12px 12px 4px' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700 }}>By Area</h2>
+            <div className="body-muted" style={{ marginTop: 2 }}>
+              Tithes, Offerings, Mission Offering, and Pledges for the Main Church and each Extension Church.
+            </div>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 780, marginTop: 8 }}>
+            <thead>
+              <tr style={{ background: 'var(--surface-muted)' }}>
+                {['Area', 'Tithes', 'Offerings', 'Mission Offering', 'Pledges', 'Total Giving'].map((h) => (
+                  <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {areaFinancialStats.map((a) => (
+                <tr key={a.id} style={{ borderTop: '1px solid var(--line)' }}>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.areaName}</div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)',
+                      }}
+                    >
+                      {a.isMainChurch ? 'Main Church' : 'Extension Church'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{peso(a.tithesActual)}</td>
+                  <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{peso(a.offeringsActual)}</td>
+                  <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{peso(a.missionOfferingActual)}</td>
+                  <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{peso(a.pledgesActual)}</td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700 }}>{peso(a.totalGivingActual)}</div>
+                    <StatusBadge status={a.totalGivingStatus} compact />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
