@@ -34,7 +34,7 @@ export default function Dashboard() {
   return (
     <div className="scroll-page">
       <SectionHeader
-        title="Executive Dashboard"
+        title="Main Dashboard"
         subtitle="See the church. Measure the mission. Manage the ministry."
       />
 
