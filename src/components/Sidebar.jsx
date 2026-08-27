@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import PeriodSelector from './PeriodSelector'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: '▦', end: true },
@@ -47,6 +48,7 @@ export default function Sidebar({ collapsed }) {
         )}
       </div>
       <hr className="divider" />
+      <PeriodSelector collapsed={collapsed} />
       <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {NAV_ITEMS.map((item) => (
           <NavLink
