@@ -239,3 +239,9 @@ button {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+@keyframes shepherd-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
