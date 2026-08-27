@@ -70,7 +70,7 @@ export default function LifeGroups() {
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
           <thead>
             <tr style={{ background: 'var(--surface-muted)' }}>
-              {['Group', 'Ministry Area', 'Barangay', 'Leader', 'Target', 'Actual', 'Achievement', 'Status'].map((h) => (
+              {['Group', 'Ministry Area', 'Barangay', 'Leader', 'Headcount', 'Achievement', 'Status', 'LG Leaders', 'LG Attendance'].map((h) => (
                 <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
                   {h}
                 </th>
@@ -84,11 +84,18 @@ export default function LifeGroups() {
                 <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{g.district}</td>
                 <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{g.barangay}</td>
                 <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{g.leader}</td>
-                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{g.targetHeadcount}</td>
-                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{g.actualHeadcount}</td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                  {g.actualHeadcount} / {g.targetHeadcount}
+                </td>
                 <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{g.achievementPct.toFixed(0)}%</td>
                 <td style={{ padding: '10px 14px' }}>
                   <StatusBadge status={g.status} compact />
+                </td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                  {g.leadersActual} / {g.leadersTarget}
+                </td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                  {g.attendanceActual.toFixed(0)} / {g.attendanceTarget.toFixed(0)}
                 </td>
               </tr>
             ))}
@@ -111,10 +118,12 @@ export default function LifeGroups() {
                 </div>
                 <StatusBadge status={g.status} compact />
               </div>
-              <div style={{ display: 'flex', gap: 20, marginTop: 12 }}>
+              <div style={{ display: 'flex', gap: 20, marginTop: 12, flexWrap: 'wrap' }}>
                 <MobileStat label="Leader" value={g.leader} />
                 <MobileStat label="Headcount" value={`${g.actualHeadcount} / ${g.targetHeadcount}`} />
                 <MobileStat label="Achievement" value={`${g.achievementPct.toFixed(0)}%`} />
+                <MobileStat label="LG Leaders" value={`${g.leadersActual} / ${g.leadersTarget}`} />
+                <MobileStat label="LG Attendance" value={`${g.attendanceActual.toFixed(0)} / ${g.attendanceTarget.toFixed(0)}`} />
               </div>
             </div>
           ))}
