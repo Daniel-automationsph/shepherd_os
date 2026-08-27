@@ -91,7 +91,7 @@ export default function PeopleGrowth() {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720, marginTop: 8 }}>
             <thead>
               <tr style={{ background: 'var(--surface-muted)' }}>
-                {['Area', 'Membership', 'Attendance', 'First Timers'].map((h) => (
+                {['Area', 'Membership', 'Attendance', 'First Timers', 'Workers'].map((h) => (
                   <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
                     {h}
                   </th>
@@ -133,6 +133,10 @@ export default function PeopleGrowth() {
                       {a.firstTimersActual} / {a.firstTimersTarget}
                     </div>
                     <StatusBadge status={a.firstTimersStatus} compact />
+                  </td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>{a.totalWorkers}</div>
+                    <div className="caption">{a.volunteerWorkers} volunteer</div>
                   </td>
                 </tr>
               ))}
