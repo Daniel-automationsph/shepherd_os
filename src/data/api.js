@@ -75,6 +75,7 @@ function hydrateBarangay(row) {
     lng: Number(row.lng),
     reached: row.reached,
     extensionChurch: row.extension_church,
+    isMainChurch: row.is_main_church,
     population: row.population,
     peopleReached: row.people_reached,
     firstTimers: row.first_timers,
@@ -310,12 +311,13 @@ export async function deleteLifeGroup(id) {
 /** Updates a barangay's outreach stats/status (barangays themselves aren't created/deleted — the 37 are fixed geography). */
 export async function updateBarangay(
   id,
-  { reached, extensionChurch, peopleReached, firstTimers, lifeGroups, outreachActivities, householdsReached, growthPct },
+  { reached, extensionChurch, isMainChurch, peopleReached, firstTimers, lifeGroups, outreachActivities, householdsReached, growthPct },
 ) {
   requireSupabase()
   const payload = {}
   if (reached != null) payload.reached = !!reached
   if (extensionChurch != null) payload.extension_church = !!extensionChurch
+  if (isMainChurch != null) payload.is_main_church = !!isMainChurch
   if (peopleReached != null) payload.people_reached = Number(peopleReached)
   if (firstTimers != null) payload.first_timers = Number(firstTimers)
   if (lifeGroups != null) payload.life_groups = Number(lifeGroups)
