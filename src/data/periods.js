@@ -1,0 +1,47 @@
+// Shepherd OS covers a fiscal year Sep 2025 – Aug 2026 (matching the
+// source POR report), not a calendar year — quarters are defined
+// relative to that.
+
+export const MONTHS = [
+  { key: '2025-09-01', label: 'September 2025' },
+  { key: '2025-10-01', label: 'October 2025' },
+  { key: '2025-11-01', label: 'November 2025' },
+  { key: '2025-12-01', label: 'December 2025' },
+  { key: '2026-01-01', label: 'January 2026' },
+  { key: '2026-02-01', label: 'February 2026' },
+  { key: '2026-03-01', label: 'March 2026' },
+  { key: '2026-04-01', label: 'April 2026' },
+  { key: '2026-05-01', label: 'May 2026' },
+  { key: '2026-06-01', label: 'June 2026' },
+  { key: '2026-07-01', label: 'July 2026' },
+  { key: '2026-08-01', label: 'August 2026' },
+]
+
+// August wasn't yet reported at the time the source data was compiled —
+// flagged here so the UI can show a "not yet reported" note rather than
+// silently treating 0 as a real figure.
+export const UNREPORTED_MONTHS = new Set(['2026-08-01'])
+
+export const QUARTERS = [
+  { key: 'Q1', label: 'Q1: Sep–Nov 2025', months: ['2025-09-01', '2025-10-01', '2025-11-01'] },
+  { key: 'Q2', label: 'Q2: Dec 2025–Feb 2026', months: ['2025-12-01', '2026-01-01', '2026-02-01'] },
+  { key: 'Q3', label: 'Q3: Mar–May 2026', months: ['2026-03-01', '2026-04-01', '2026-05-01'] },
+  { key: 'Q4', label: 'Q4: Jun–Aug 2026', months: ['2026-06-01', '2026-07-01', '2026-08-01'] },
+]
+
+export const ANNUAL = { key: 'FY2025-26', label: 'Full Year: Sep 2025 – Aug 2026', months: MONTHS.map((m) => m.key) }
+
+export const GRANULARITIES = ['Monthly', 'Quarterly', 'Annual']
+
+/** Returns the list of {key,label,months} options for a given granularity. */
+export function optionsFor(granularity) {
+  if (granularity === 'Monthly') return MONTHS.map((m) => ({ ...m, months: [m.key] }))
+  if (granularity === 'Quarterly') return QUARTERS
+  return [ANNUAL]
+}
+
+/** A sensible default: the most recently REPORTED month (skips August). */
+export function defaultMonthlyKey() {
+  const reported = MONTHS.filter((m) => !UNREPORTED_MONTHS.has(m.key))
+  return reported[reported.length - 1].key
+}
