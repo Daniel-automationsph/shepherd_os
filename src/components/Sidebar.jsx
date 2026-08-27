@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { to: '/kpi-center', label: 'KPI Center', icon: '◎' },
   { to: '/reports', label: 'Reports', icon: '▤' },
   { to: '/attention', label: 'Attention', icon: '!' },
-  { to: '/admin', label: 'Admin', icon: '⚙' },
+  { to: '/admin', label: 'Admin Console', icon: '⚙' },
 ]
 
 export default function Sidebar({ collapsed }) {
