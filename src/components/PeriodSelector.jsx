@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { usePeriod } from '../context/PeriodContext'
 import { optionsFor } from '../data/periods'
+import Spinner from './Spinner'
 
 /** Top-right date range control. Changes are staged locally and only take
  * effect (triggering a real data fetch) when Apply is clicked — Cancel
  * discards them. This avoids re-fetching on every single dropdown click
  * while the user is still deciding what they want. */
 export default function PeriodSelector() {
-  const { granularity, applyPeriod, granularities, selectedKey, selected } = usePeriod()
+  const { granularity, applyPeriod, granularities, selectedKey, selected, loading } = usePeriod()
   const [open, setOpen] = useState(false)
   const [localGranularity, setLocalGranularity] = useState(granularity)
   const [localKey, setLocalKey] = useState(selectedKey)
@@ -58,7 +59,7 @@ export default function PeriodSelector() {
           cursor: 'pointer',
         }}
       >
-        <span style={{ fontSize: 14 }}>📅</span>
+        <span style={{ fontSize: 14, display: 'flex' }}>{loading ? <Spinner size={14} color="var(--primary)" /> : '📅'}</span>
         {selected?.label}
         <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>{open ? '▲' : '▼'}</span>
       </button>
