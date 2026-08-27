@@ -125,13 +125,14 @@ export default function BarangayMap({
     const selected = name === selectedName
     const reached = b?.reached
     const extension = b?.extensionChurch
+    const mainChurch = b?.isMainChurch
 
-    const fillColor = extension ? '#c98a2c' : reached ? '#2f7d4f' : '#d94f36'
-    const borderColor = extension ? '#8a5f1c' : reached ? '#1f5c37' : '#8f3220'
+    const fillColor = mainChurch ? '#1d5fa8' : extension ? '#c98a2c' : reached ? '#2f7d4f' : '#d94f36'
+    const borderColor = mainChurch ? '#123f70' : extension ? '#8a5f1c' : reached ? '#1f5c37' : '#8f3220'
 
     return {
       fillColor,
-      fillOpacity: selected ? 0.85 : extension ? 0.72 : reached ? 0.65 : 0.6,
+      fillOpacity: selected ? 0.85 : mainChurch ? 0.75 : extension ? 0.72 : reached ? 0.65 : 0.6,
       color: selected ? '#1e2a22' : borderColor,
       weight: selected ? 3.5 : 1.8,
     }
@@ -289,7 +290,7 @@ export default function BarangayMap({
                     width: 7,
                     height: 7,
                     borderRadius: '50%',
-                    background: b.extensionChurch ? '#c98a2c' : b.reached ? '#2f7d4f' : '#d94f36',
+                    background: b.isMainChurch ? '#1d5fa8' : b.extensionChurch ? '#c98a2c' : b.reached ? '#2f7d4f' : '#d94f36',
                     flexShrink: 0,
                   }}
                 />
@@ -313,6 +314,8 @@ export default function BarangayMap({
           fontSize: 11,
         }}
       >
+        <LegendRow color="#1d5fa8" label="Main Church" />
+        <div style={{ height: 4 }} />
         <LegendRow color="#c98a2c" label="Extension Church" />
         <div style={{ height: 4 }} />
         <LegendRow color="#2f7d4f" label="Reached" />
