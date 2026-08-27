@@ -5,7 +5,7 @@ import { useAppData } from '../context/DataContext'
 
 export default function PeopleGrowth() {
   const { data } = useAppData()
-  const { totalMembers, activeMembers, newMembers, inactiveMembers, membershipGrowthPct, attendanceKpi, firstTimerFunnel } = data
+  const { totalMembers, activeMembers, newMembers, inactiveMembers, membershipGrowthPct, attendanceKpi, firstTimerFunnel, areaPeopleStats } = data
 
   const metrics = [
     ['Total Members', totalMembers, null],
@@ -54,9 +54,9 @@ export default function PeopleGrowth() {
         </div>
 
         <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700 }}>First-Timer Funnel</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700 }}>Discipleship Pipeline</h2>
           <div className="body-muted" style={{ marginTop: 4, marginBottom: 16 }}>
-            First Timers → Contacted → Returned → Connected → Regular
+            Evangelized → Pre-Encounter → Encounter → Post-Encounter → Water Baptized
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {firstTimerFunnel.map((stage, i) => (
@@ -79,6 +79,67 @@ export default function PeopleGrowth() {
           </div>
         </div>
       </div>
+
+      {areaPeopleStats && areaPeopleStats.length > 0 && (
+        <div className="card" style={{ marginTop: 20, padding: 8, overflowX: 'auto' }}>
+          <div style={{ padding: '12px 12px 4px' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700 }}>By Area</h2>
+            <div className="body-muted" style={{ marginTop: 2 }}>
+              Membership, attendance, and first-timers for the Main Church and each Extension Church.
+            </div>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720, marginTop: 8 }}>
+            <thead>
+              <tr style={{ background: 'var(--surface-muted)' }}>
+                {['Area', 'Membership', 'Attendance', 'First Timers'].map((h) => (
+                  <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {areaPeopleStats.map((a) => (
+                <tr key={a.id} style={{ borderTop: '1px solid var(--line)' }}>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.areaName}</div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '2px 7px',
+                        borderRadius: 999,
+                        color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)',
+                        background: a.isMainChurch ? '#dce9f7' : 'var(--accent-soft)',
+                      }}
+                    >
+                      {a.isMainChurch ? 'MAIN CHURCH' : 'EXTENSION CHURCH'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>
+                      {a.membershipActual} / {a.membershipTarget}
+                    </div>
+                    <StatusBadge status={a.membershipStatus} compact />
+                  </td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>
+                      {a.attendanceActual.toFixed(0)} / {a.attendanceTarget.toFixed(0)}
+                    </div>
+                    <StatusBadge status={a.attendanceStatus} compact />
+                  </td>
+                  <td style={{ padding: '10px 14px' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>
+                      {a.firstTimersActual} / {a.firstTimersTarget}
+                    </div>
+                    <StatusBadge status={a.firstTimersStatus} compact />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
