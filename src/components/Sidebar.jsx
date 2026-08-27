@@ -5,7 +5,7 @@ const NAV_ITEMS = [
   { to: '/people', label: 'Membership', icon: '◔' },
   { to: '/life-groups', label: 'Life Groups', icon: '◈' },
   { to: '/outreach', label: 'Outreach', icon: '⬡' },
-  { to: '/financial', label: 'Financial', icon: '$' },
+  { to: '/financial', label: 'Finance', icon: '$' },
   { to: '/kpi-center', label: 'KPI Center', icon: '◎' },
   { to: '/reports', label: 'Reports', icon: '▤' },
   { to: '/attention', label: 'Attention', icon: '!' },
