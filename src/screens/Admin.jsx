@@ -20,9 +20,10 @@ import {
   createKpiTarget,
   updateKpi,
   deleteKpi,
+  updateAreaPeopleStats,
 } from '../data/api'
 
-const TABS = ['People', 'Life Groups', 'Financial', 'Barangays', 'Attention', 'KPIs']
+const TABS = ['People', 'Area People', 'Life Groups', 'Financial', 'Barangays', 'Attention', 'KPIs']
 
 export default function Admin() {
   const [tab, setTab] = useState('People')
@@ -49,6 +50,7 @@ export default function Admin() {
       </div>
 
       {tab === 'People' && <PeopleSection />}
+      {tab === 'Area People' && <AreaPeopleSection />}
       {tab === 'Life Groups' && <LifeGroupsSection />}
       {tab === 'Financial' && <FinancialSection />}
       {tab === 'Barangays' && <BarangaysSection />}
@@ -197,6 +199,144 @@ function PeopleSection() {
         {savedFlash && <span style={{ color: 'var(--status-on-target)', fontSize: 13, fontWeight: 600 }}>Saved ✓</span>}
       </div>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------
+// Area People — edit-only (Main Church + 3 Extension Churches; areas
+// themselves aren't created/deleted here, that's a Barangays-tab job).
+// ---------------------------------------------------------------------
+function AreaPeopleSection() {
+  const { data, refetch } = useAppData()
+  const [sheet, setSheet] = useState(null)
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 8, overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
+          <thead>
+            <tr style={{ background: 'var(--surface-muted)' }}>
+              {['Area', 'Membership', 'Attendance', 'First Timers', ''].map((h) => (
+                <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.areaPeopleStats.map((a) => (
+              <tr key={a.id} style={{ borderTop: '1px solid var(--line)' }}>
+                <td style={{ padding: '10px 14px' }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.areaName}</div>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)',
+                    }}
+                  >
+                    {a.isMainChurch ? 'Main Church' : 'Extension Church'}
+                  </span>
+                </td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                  {a.membershipActual} / {a.membershipTarget}
+                </td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                  {a.attendanceActual.toFixed(0)} / {a.attendanceTarget.toFixed(0)}
+                </td>
+                <td style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                  {a.firstTimersActual} / {a.firstTimersTarget}
+                </td>
+                <td style={{ padding: '10px 14px' }}>
+                  <IconButton title="Edit" onClick={() => setSheet(a)}>
+                    ✏️
+                  </IconButton>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {sheet && (
+        <AreaPeopleSheet
+          area={sheet}
+          onClose={() => setSheet(null)}
+          onSaved={async () => {
+            await refetch()
+            setSheet(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function AreaPeopleSheet({ area, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    membershipTarget: area.membershipTarget,
+    membershipActual: area.membershipActual,
+    activeMembershipTarget: area.activeMembershipTarget,
+    activeMembershipActual: area.activeMembershipActual,
+    attendanceTarget: area.attendanceTarget,
+    attendanceActual: area.attendanceActual,
+    firstTimersTarget: area.firstTimersTarget,
+    firstTimersActual: area.firstTimersActual,
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  function set(key) {
+    return (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    setError(null)
+    try {
+      await updateAreaPeopleStats(area.id, form)
+      await onSaved()
+    } catch (err) {
+      setError(err.message)
+      setSaving(false)
+    }
+  }
+
+  const groups = [
+    ['Membership', 'membershipTarget', 'membershipActual'],
+    ['Active Membership', 'activeMembershipTarget', 'activeMembershipActual'],
+    ['Attendance', 'attendanceTarget', 'attendanceActual'],
+    ['First Timers', 'firstTimersTarget', 'firstTimersActual'],
+  ]
+
+  return (
+    <FormSheet title={area.areaName} subtitle={area.isMainChurch ? 'Main Church' : 'Extension Church'} onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {groups.map(([label, targetKey, actualKey]) => (
+          <div key={label}>
+            <div className="label" style={{ marginBottom: 6 }}>
+              {label}
+            </div>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="Target">
+                  <input type="number" style={sheetInputStyle} value={form[targetKey]} onChange={set(targetKey)} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Actual">
+                  <input type="number" style={sheetInputStyle} value={form[actualKey]} onChange={set(actualKey)} />
+                </Field>
+              </div>
+            </div>
+          </div>
+        ))}
+        {error && <div style={{ color: 'var(--status-critical)', fontSize: 13 }}>{error}</div>}
+        <SheetButton onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Changes'}
+        </SheetButton>
+      </div>
+    </FormSheet>
   )
 }
 
