@@ -40,12 +40,6 @@ export default function Dashboard() {
 
       <div className="two-col" style={{ marginBottom: 20 }}>
         <div className="card">
-          <div style={{ display: 'flex', marginBottom: 14 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Geographic Reach</h2>
-            <span className="body-muted">
-              {barangaysReached}/{totalBarangays} reached
-            </span>
-          </div>
           <BarangayMap barangays={barangays} selectedName={selected?.name} onSelect={setSelected} />
         </div>
 
