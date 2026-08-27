@@ -531,11 +531,17 @@ function BarangaysSection() {
                       fontWeight: 700,
                       padding: '3px 8px',
                       borderRadius: 999,
-                      color: b.extensionChurch ? 'var(--accent)' : b.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
-                      background: b.extensionChurch ? 'var(--accent-soft)' : b.reached ? 'var(--status-on-target-bg)' : 'var(--status-critical-bg)',
+                      color: b.isMainChurch ? '#1d5fa8' : b.extensionChurch ? 'var(--accent)' : b.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
+                      background: b.isMainChurch
+                        ? '#dce9f7'
+                        : b.extensionChurch
+                          ? 'var(--accent-soft)'
+                          : b.reached
+                            ? 'var(--status-on-target-bg)'
+                            : 'var(--status-critical-bg)',
                     }}
                   >
-                    {b.extensionChurch ? 'Extension Church' : b.reached ? 'Reached' : 'Not Reached'}
+                    {b.isMainChurch ? 'Main Church' : b.extensionChurch ? 'Extension Church' : b.reached ? 'Reached' : 'Not Reached'}
                   </span>
                 </td>
                 <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{b.reached ? b.peopleReached : '—'}</td>
@@ -576,6 +582,7 @@ function BarangaySheet({ barangay, onClose, onSaved }) {
   const [form, setForm] = useState({
     reached: barangay.reached,
     extensionChurch: barangay.extensionChurch,
+    isMainChurch: barangay.isMainChurch,
     peopleReached: barangay.peopleReached,
     firstTimers: barangay.firstTimers,
     lifeGroups: barangay.lifeGroups,
@@ -591,6 +598,17 @@ function BarangaySheet({ barangay, onClose, onSaved }) {
   }
   function setChecked(key) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.checked }))
+  }
+  // Main Church and Extension Church are mutually exclusive statuses —
+  // checking one clears the other, rather than letting a barangay claim
+  // both at once.
+  function setMainChurch(e) {
+    const checked = e.target.checked
+    setForm((f) => ({ ...f, isMainChurch: checked, extensionChurch: checked ? false : f.extensionChurch }))
+  }
+  function setExtensionChurch(e) {
+    const checked = e.target.checked
+    setForm((f) => ({ ...f, extensionChurch: checked, isMainChurch: checked ? false : f.isMainChurch }))
   }
 
   async function handleSave() {
@@ -617,13 +635,17 @@ function BarangaySheet({ barangay, onClose, onSaved }) {
   return (
     <FormSheet title={barangay.name} subtitle={barangay.area} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', gap: 20 }}>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
             <input type="checkbox" checked={form.reached} onChange={setChecked('reached')} />
             Reached
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-            <input type="checkbox" checked={form.extensionChurch} onChange={setChecked('extensionChurch')} />
+            <input type="checkbox" checked={form.isMainChurch} onChange={setMainChurch} />
+            Main Church
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+            <input type="checkbox" checked={form.extensionChurch} onChange={setExtensionChurch} />
             Extension Church
           </label>
         </div>
