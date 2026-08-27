@@ -1,56 +1,145 @@
+import { useState } from 'react'
 import { usePeriod } from '../context/PeriodContext'
+import { optionsFor } from '../data/periods'
 
-/** Always-visible date range picker — lives in the sidebar so it applies
- * across the whole app rather than being page-specific. */
-export default function PeriodSelector({ collapsed }) {
-  const { granularity, setGranularity, granularities, options, selectedKey, setSelectedKey } = usePeriod()
+/** Top-right date range control. Changes are staged locally and only take
+ * effect (triggering a real data fetch) when Apply is clicked — Cancel
+ * discards them. This avoids re-fetching on every single dropdown click
+ * while the user is still deciding what they want. */
+export default function PeriodSelector() {
+  const { granularity, applyPeriod, granularities, selectedKey, selected } = usePeriod()
+  const [open, setOpen] = useState(false)
+  const [localGranularity, setLocalGranularity] = useState(granularity)
+  const [localKey, setLocalKey] = useState(selectedKey)
 
-  if (collapsed) {
-    // Icon-only sidebar mode (tablet width) — the two dropdowns don't fit,
-    // so just show a compact calendar glyph as a visual placeholder; the
-    // full control reappears once the sidebar expands (desktop) or via
-    // the mobile layout.
-    return (
-      <div style={{ padding: '10px 0', textAlign: 'center', borderBottom: '1px solid var(--line)' }}>
-        <span style={{ fontSize: 16 }}>📅</span>
-      </div>
-    )
+  // Re-sync the staged (local) selection to whatever's actually applied
+  // whenever the popover opens, so it doesn't show stale picks from a
+  // previously-cancelled attempt.
+  function openPopover() {
+    setLocalGranularity(granularity)
+    setLocalKey(selectedKey)
+    setOpen(true)
+  }
+
+  const localOptions = optionsFor(localGranularity)
+
+  function handleLocalGranularityChange(g) {
+    setLocalGranularity(g)
+    const opts = optionsFor(g)
+    setLocalKey(opts[opts.length - 1].key) // default to most recent within the newly chosen granularity
+  }
+
+  function handleApply() {
+    applyPeriod(localGranularity, localKey)
+    setOpen(false)
+  }
+
+  function handleCancel() {
+    setLocalGranularity(granularity)
+    setLocalKey(selectedKey)
+    setOpen(false)
   }
 
   return (
-    <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div className="label" style={{ marginBottom: 2 }}>
-        Date Range
-      </div>
-      <select
-        value={granularity}
-        onChange={(e) => setGranularity(e.target.value)}
-        style={selectStyle}
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => (open ? handleCancel() : openPopover())}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '9px 14px',
+          borderRadius: 10,
+          border: '1px solid var(--line)',
+          background: 'var(--surface)',
+          fontSize: 13,
+          fontWeight: 700,
+          color: 'var(--ink)',
+          cursor: 'pointer',
+        }}
       >
-        {granularities.map((g) => (
-          <option key={g} value={g}>
-            {g}
-          </option>
-        ))}
-      </select>
-      <select value={selectedKey} onChange={(e) => setSelectedKey(e.target.value)} style={selectStyle}>
-        {options.map((o) => (
-          <option key={o.key} value={o.key}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+        <span style={{ fontSize: 14 }}>📅</span>
+        {selected?.label}
+        <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <>
+          {/* Invisible backdrop — clicking outside the popover cancels, same as clicking Cancel. */}
+          <div style={{ position: 'fixed', inset: 0, zIndex: 999 }} onClick={handleCancel} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              right: 0,
+              zIndex: 1000,
+              background: 'var(--surface)',
+              border: '1px solid var(--line)',
+              borderRadius: 12,
+              padding: 16,
+              width: 260,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="label" style={{ marginBottom: 6 }}>
+              Granularity
+            </div>
+            <select
+              value={localGranularity}
+              onChange={(e) => handleLocalGranularityChange(e.target.value)}
+              style={selectStyle}
+            >
+              {granularities.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+
+            <div className="label" style={{ margin: '14px 0 6px' }}>
+              Period
+            </div>
+            <select value={localKey} onChange={(e) => setLocalKey(e.target.value)} style={selectStyle}>
+              {localOptions.map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+              <button onClick={handleCancel} style={{ ...actionButtonStyle, background: 'var(--surface-muted)', color: 'var(--ink)' }}>
+                Cancel
+              </button>
+              <button onClick={handleApply} style={{ ...actionButtonStyle, background: 'var(--primary)', color: 'white' }}>
+                Apply
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
 const selectStyle = {
   width: '100%',
-  padding: '7px 8px',
+  padding: '9px 10px',
   borderRadius: 8,
   border: '1px solid var(--line)',
   background: 'var(--surface-muted)',
-  fontSize: 12.5,
+  fontSize: 13,
   fontFamily: 'inherit',
   color: 'var(--ink)',
+}
+
+const actionButtonStyle = {
+  flex: 1,
+  padding: '10px 0',
+  borderRadius: 8,
+  border: 'none',
+  fontWeight: 700,
+  fontSize: 13,
+  cursor: 'pointer',
 }
