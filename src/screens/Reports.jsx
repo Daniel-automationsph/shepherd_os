@@ -1,4 +1,5 @@
 import SectionHeader from '../components/SectionHeader'
+import { LoadingSpinner } from '../components/Spinner'
 import { usePeriod } from '../context/PeriodContext'
 import { peso, commas } from '../data/api'
 import { UNREPORTED_MONTHS } from '../data/periods'
@@ -10,7 +11,7 @@ export default function Reports() {
     <div className="scroll-page" style={{ maxWidth: 900 }}>
       <SectionHeader
         title="Reports"
-        subtitle="Real figures for the period selected in the sidebar — not a fixed weekly/monthly template."
+        subtitle="Real figures for the period selected at the top right — not a fixed weekly/monthly template."
       />
 
       <div className="card" style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -37,9 +38,7 @@ export default function Reports() {
       </div>
 
       {loading ? (
-        <div className="body-muted" style={{ textAlign: 'center', padding: 40 }}>
-          Loading real figures for this period...
-        </div>
+        <LoadingSpinner label="Loading real figures for this period..." />
       ) : error ? (
         <div className="card" style={{ textAlign: 'center', padding: 24 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Couldn't load this period</div>
