@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
+import PeriodSelector from './components/PeriodSelector'
 import { LoadingState, ErrorState } from './components/LoadingError'
 import { DataProvider, useAppData } from './context/DataContext'
 import { PeriodProvider } from './context/PeriodContext'
@@ -45,7 +46,17 @@ function AppShell() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       {!mobile && <Sidebar collapsed={collapsed} />}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            padding: mobile ? '12px 16px 0' : '16px 24px 0',
+          }}
+        >
+          <PeriodSelector />
+        </div>
         {loading ? (
           <LoadingState label="Loading Shepherd OS..." />
         ) : error ? (
