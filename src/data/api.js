@@ -53,6 +53,7 @@ function hydrateKpi(row) {
 
 function hydrateLifeGroup(row) {
   const pct = achievementPct(row.actual_headcount, row.target_headcount)
+  const attendancePct = achievementPct(row.attendance_actual, row.attendance_target)
   return {
     id: row.id,
     name: row.name,
@@ -63,6 +64,12 @@ function hydrateLifeGroup(row) {
     actualHeadcount: row.actual_headcount,
     achievementPct: pct,
     status: statusFromAchievement(pct),
+    leadersTarget: Number(row.leaders_target ?? 0),
+    leadersActual: Number(row.leaders_actual ?? 0),
+    attendanceTarget: Number(row.attendance_target ?? 0),
+    attendanceActual: Number(row.attendance_actual ?? 0),
+    attendanceAchievementPct: attendancePct,
+    attendanceStatus: statusFromAchievement(attendancePct),
   }
 }
 
@@ -123,6 +130,31 @@ function hydrateAreaPeopleStats(row) {
     firstTimersTrend: row.first_timers_trend || [],
     firstTimersAchievementPct: firstTimersPct,
     firstTimersStatus: statusFromAchievement(firstTimersPct),
+    fullTimeWorkers: Number(row.full_time_workers ?? 0),
+    partTimeWorkers: Number(row.part_time_workers ?? 0),
+    volunteerWorkers: Number(row.volunteer_workers ?? 0),
+    totalWorkers: Number(row.total_workers ?? 0),
+  }
+}
+
+function hydrateAreaFinancialStats(row) {
+  const totalPct = achievementPct(row.total_giving_actual, row.total_giving_target)
+  return {
+    id: row.id,
+    areaName: row.area_name,
+    isMainChurch: row.is_main_church,
+    tithesTarget: Number(row.tithes_target),
+    tithesActual: Number(row.tithes_actual),
+    offeringsTarget: Number(row.offerings_target),
+    offeringsActual: Number(row.offerings_actual),
+    missionOfferingTarget: Number(row.mission_offering_target),
+    missionOfferingActual: Number(row.mission_offering_actual),
+    pledgesTarget: Number(row.pledges_target),
+    pledgesActual: Number(row.pledges_actual),
+    totalGivingTarget: Number(row.total_giving_target),
+    totalGivingActual: Number(row.total_giving_actual),
+    totalGivingAchievementPct: totalPct,
+    totalGivingStatus: statusFromAchievement(totalPct),
   }
 }
 
@@ -138,16 +170,18 @@ export async function fetchAppData() {
       'Supabase is not configured yet. Copy .env.example to .env.local, fill in your Supabase project URL and anon key, then restart the dev server (or redeploy).',
     )
   }
-  const [orgStatsRes, funnelRes, kpisRes, lifeGroupsRes, barangaysRes, financialRes, attentionRes, areaPeopleRes] = await Promise.all([
-    supabase.from('org_stats').select('*').eq('id', 1).single(),
-    supabase.from('funnel_stages').select('*').order('sort_order'),
-    supabase.from('kpis').select('*').order('id'),
-    supabase.from('life_groups').select('*').order('id'),
-    supabase.from('barangays').select('*').order('name'),
-    supabase.from('financial_categories').select('*').order('id'),
-    supabase.from('attention_items').select('*').order('id'),
-    supabase.from('area_people_stats').select('*').order('area_name'),
-  ])
+  const [orgStatsRes, funnelRes, kpisRes, lifeGroupsRes, barangaysRes, financialRes, attentionRes, areaPeopleRes, areaFinancialRes] =
+    await Promise.all([
+      supabase.from('org_stats').select('*').eq('id', 1).single(),
+      supabase.from('funnel_stages').select('*').order('sort_order'),
+      supabase.from('kpis').select('*').order('id'),
+      supabase.from('life_groups').select('*').order('id'),
+      supabase.from('barangays').select('*').order('name'),
+      supabase.from('financial_categories').select('*').order('id'),
+      supabase.from('attention_items').select('*').order('id'),
+      supabase.from('area_people_stats').select('*').order('area_name'),
+      supabase.from('area_financial_stats').select('*').order('area_name'),
+    ])
 
   for (const [label, res] of [
     ['org_stats', orgStatsRes],
@@ -158,6 +192,7 @@ export async function fetchAppData() {
     ['financial_categories', financialRes],
     ['attention_items', attentionRes],
     ['area_people_stats', areaPeopleRes],
+    ['area_financial_stats', areaFinancialRes],
   ]) {
     if (res.error) throw new Error(`Failed to load ${label}: ${res.error.message}`)
   }
@@ -184,6 +219,10 @@ export async function fetchAppData() {
 
   const areaPeopleStats = areaPeopleRes.data
     .map(hydrateAreaPeopleStats)
+    .sort((a, b) => (b.isMainChurch ? 1 : 0) - (a.isMainChurch ? 1 : 0))
+
+  const areaFinancialStats = areaFinancialRes.data
+    .map(hydrateAreaFinancialStats)
     .sort((a, b) => (b.isMainChurch ? 1 : 0) - (a.isMainChurch ? 1 : 0))
 
   const attentionItems = attentionRes.data.map((row) => ({
@@ -222,6 +261,7 @@ export async function fetchAppData() {
     // Financial
     financialCategories,
     financialKpi: byName['Overall Giving'],
+    areaFinancialStats,
 
     // Management Attention
     attentionItems,
@@ -262,7 +302,20 @@ export async function createKpiTarget({ name, category, target, frequency }) {
 
 export async function updateAreaPeopleStats(
   id,
-  { membershipTarget, membershipActual, activeMembershipTarget, activeMembershipActual, attendanceTarget, attendanceActual, firstTimersTarget, firstTimersActual },
+  {
+    membershipTarget,
+    membershipActual,
+    activeMembershipTarget,
+    activeMembershipActual,
+    attendanceTarget,
+    attendanceActual,
+    firstTimersTarget,
+    firstTimersActual,
+    fullTimeWorkers,
+    partTimeWorkers,
+    volunteerWorkers,
+    totalWorkers,
+  },
 ) {
   requireSupabase()
   const payload = {}
@@ -274,8 +327,44 @@ export async function updateAreaPeopleStats(
   if (attendanceActual != null) payload.attendance_actual = Number(attendanceActual)
   if (firstTimersTarget != null) payload.first_timers_target = Number(firstTimersTarget)
   if (firstTimersActual != null) payload.first_timers_actual = Number(firstTimersActual)
+  if (fullTimeWorkers != null) payload.full_time_workers = Number(fullTimeWorkers)
+  if (partTimeWorkers != null) payload.part_time_workers = Number(partTimeWorkers)
+  if (volunteerWorkers != null) payload.volunteer_workers = Number(volunteerWorkers)
+  if (totalWorkers != null) payload.total_workers = Number(totalWorkers)
 
   const { error } = await supabase.from('area_people_stats').update(payload).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+export async function updateAreaFinancialStats(
+  id,
+  {
+    tithesTarget,
+    tithesActual,
+    offeringsTarget,
+    offeringsActual,
+    missionOfferingTarget,
+    missionOfferingActual,
+    pledgesTarget,
+    pledgesActual,
+    totalGivingTarget,
+    totalGivingActual,
+  },
+) {
+  requireSupabase()
+  const payload = {}
+  if (tithesTarget != null) payload.tithes_target = Number(tithesTarget)
+  if (tithesActual != null) payload.tithes_actual = Number(tithesActual)
+  if (offeringsTarget != null) payload.offerings_target = Number(offeringsTarget)
+  if (offeringsActual != null) payload.offerings_actual = Number(offeringsActual)
+  if (missionOfferingTarget != null) payload.mission_offering_target = Number(missionOfferingTarget)
+  if (missionOfferingActual != null) payload.mission_offering_actual = Number(missionOfferingActual)
+  if (pledgesTarget != null) payload.pledges_target = Number(pledgesTarget)
+  if (pledgesActual != null) payload.pledges_actual = Number(pledgesActual)
+  if (totalGivingTarget != null) payload.total_giving_target = Number(totalGivingTarget)
+  if (totalGivingActual != null) payload.total_giving_actual = Number(totalGivingActual)
+
+  const { error } = await supabase.from('area_financial_stats').update(payload).eq('id', id)
   if (error) throw new Error(error.message)
 }
 
@@ -339,19 +428,25 @@ export async function createLifeGroup({ name, district, barangay, leader, target
 }
 
 /** Updates an existing life group by id. */
-export async function updateLifeGroup(id, { name, district, barangay, leader, targetHeadcount, actualHeadcount }) {
+export async function updateLifeGroup(
+  id,
+  { name, district, barangay, leader, targetHeadcount, actualHeadcount, leadersTarget, leadersActual, attendanceTarget, attendanceActual },
+) {
   requireSupabase()
-  const { error } = await supabase
-    .from('life_groups')
-    .update({
-      name,
-      district,
-      barangay,
-      leader,
-      target_headcount: Number(targetHeadcount) || 0,
-      actual_headcount: Number(actualHeadcount) || 0,
-    })
-    .eq('id', id)
+  const payload = {
+    name,
+    district,
+    barangay,
+    leader,
+    target_headcount: Number(targetHeadcount) || 0,
+    actual_headcount: Number(actualHeadcount) || 0,
+  }
+  if (leadersTarget != null) payload.leaders_target = Number(leadersTarget)
+  if (leadersActual != null) payload.leaders_actual = Number(leadersActual)
+  if (attendanceTarget != null) payload.attendance_target = Number(attendanceTarget)
+  if (attendanceActual != null) payload.attendance_actual = Number(attendanceActual)
+
+  const { error } = await supabase.from('life_groups').update(payload).eq('id', id)
   if (error) throw new Error(error.message)
 }
 
