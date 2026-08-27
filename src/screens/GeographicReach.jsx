@@ -52,11 +52,23 @@ export default function GeographicReach() {
                     fontWeight: 700,
                     padding: '4px 10px',
                     borderRadius: 999,
-                    color: selected.extensionChurch ? 'var(--accent)' : selected.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
-                    background: selected.extensionChurch ? 'var(--accent-soft)' : selected.reached ? 'var(--status-on-target-bg)' : 'var(--status-critical-bg)',
+                    color: selected.isMainChurch
+                      ? '#1d5fa8'
+                      : selected.extensionChurch
+                        ? 'var(--accent)'
+                        : selected.reached
+                          ? 'var(--status-on-target)'
+                          : 'var(--status-critical)',
+                    background: selected.isMainChurch
+                      ? '#dce9f7'
+                      : selected.extensionChurch
+                        ? 'var(--accent-soft)'
+                        : selected.reached
+                          ? 'var(--status-on-target-bg)'
+                          : 'var(--status-critical-bg)',
                   }}
                 >
-                  {selected.extensionChurch ? 'Extension Church' : selected.reached ? 'Reached' : 'Not Reached'}
+                  {selected.isMainChurch ? 'Main Church' : selected.extensionChurch ? 'Extension Church' : selected.reached ? 'Reached' : 'Not Reached'}
                 </span>
               </div>
               <div className="body-muted">
@@ -115,12 +127,27 @@ export default function GeographicReach() {
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: b.extensionChurch ? 'var(--accent)' : b.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
+                  background: b.isMainChurch ? '#1d5fa8' : b.extensionChurch ? 'var(--accent)' : b.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
                   flexShrink: 0,
                 }}
               />
               <div style={{ flex: 1, fontSize: 14 }}>
                 {b.name}
+                {b.isMainChurch && (
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#1d5fa8',
+                      background: '#dce9f7',
+                      padding: '2px 6px',
+                      borderRadius: 999,
+                    }}
+                  >
+                    MAIN CHURCH
+                  </span>
+                )}
                 {b.extensionChurch && (
                   <span
                     style={{
