@@ -20,6 +20,15 @@ export function PeriodProvider({ children }) {
     setSelectedKey(opts[opts.length - 1].key) // default to the most recent period in that granularity
   }, [])
 
+  // Sets granularity + key together in one go (used by the Apply button in
+  // PeriodSelector) — React batches these into a single re-render inside
+  // an event handler, so the fetch effect below only fires once instead
+  // of twice (once for the granularity change, once for the key change).
+  const applyPeriod = useCallback((g, key) => {
+    setGranularityState(g)
+    setSelectedKey(key)
+  }, [])
+
   const load = useCallback(async (months) => {
     setLoading(true)
     setError(null)
@@ -41,6 +50,7 @@ export function PeriodProvider({ children }) {
   const value = {
     granularity,
     setGranularity,
+    applyPeriod,
     granularities: GRANULARITIES,
     options,
     selectedKey,
