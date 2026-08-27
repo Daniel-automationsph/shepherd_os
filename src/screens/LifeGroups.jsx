@@ -46,7 +46,7 @@ export default function LifeGroups() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 24, marginBottom: 12 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Groups</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Churches</h2>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
