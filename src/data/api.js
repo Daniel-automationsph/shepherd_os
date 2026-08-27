@@ -99,6 +99,33 @@ function hydrateFinancialCategory(row) {
   }
 }
 
+function hydrateAreaPeopleStats(row) {
+  const membershipPct = achievementPct(row.membership_actual, row.membership_target)
+  const attendancePct = achievementPct(row.attendance_actual, row.attendance_target)
+  const firstTimersPct = achievementPct(row.first_timers_actual, row.first_timers_target)
+  return {
+    id: row.id,
+    areaName: row.area_name,
+    isMainChurch: row.is_main_church,
+    membershipTarget: Number(row.membership_target),
+    membershipActual: Number(row.membership_actual),
+    membershipAchievementPct: membershipPct,
+    membershipStatus: statusFromAchievement(membershipPct),
+    activeMembershipTarget: Number(row.active_membership_target),
+    activeMembershipActual: Number(row.active_membership_actual),
+    attendanceTarget: Number(row.attendance_target),
+    attendanceActual: Number(row.attendance_actual),
+    attendanceTrend: row.attendance_trend || [],
+    attendanceAchievementPct: attendancePct,
+    attendanceStatus: statusFromAchievement(attendancePct),
+    firstTimersTarget: Number(row.first_timers_target),
+    firstTimersActual: Number(row.first_timers_actual),
+    firstTimersTrend: row.first_timers_trend || [],
+    firstTimersAchievementPct: firstTimersPct,
+    firstTimersStatus: statusFromAchievement(firstTimersPct),
+  }
+}
+
 /**
  * Fetches every dataset the app needs in parallel and returns it already
  * shaped/computed exactly like the old static mockData.js did, so screens
@@ -111,7 +138,7 @@ export async function fetchAppData() {
       'Supabase is not configured yet. Copy .env.example to .env.local, fill in your Supabase project URL and anon key, then restart the dev server (or redeploy).',
     )
   }
-  const [orgStatsRes, funnelRes, kpisRes, lifeGroupsRes, barangaysRes, financialRes, attentionRes] = await Promise.all([
+  const [orgStatsRes, funnelRes, kpisRes, lifeGroupsRes, barangaysRes, financialRes, attentionRes, areaPeopleRes] = await Promise.all([
     supabase.from('org_stats').select('*').eq('id', 1).single(),
     supabase.from('funnel_stages').select('*').order('sort_order'),
     supabase.from('kpis').select('*').order('id'),
@@ -119,6 +146,7 @@ export async function fetchAppData() {
     supabase.from('barangays').select('*').order('name'),
     supabase.from('financial_categories').select('*').order('id'),
     supabase.from('attention_items').select('*').order('id'),
+    supabase.from('area_people_stats').select('*').order('area_name'),
   ])
 
   for (const [label, res] of [
@@ -129,6 +157,7 @@ export async function fetchAppData() {
     ['barangays', barangaysRes],
     ['financial_categories', financialRes],
     ['attention_items', attentionRes],
+    ['area_people_stats', areaPeopleRes],
   ]) {
     if (res.error) throw new Error(`Failed to load ${label}: ${res.error.message}`)
   }
@@ -153,6 +182,10 @@ export async function fetchAppData() {
 
   const financialCategories = financialRes.data.map(hydrateFinancialCategory)
 
+  const areaPeopleStats = areaPeopleRes.data
+    .map(hydrateAreaPeopleStats)
+    .sort((a, b) => (b.isMainChurch ? 1 : 0) - (a.isMainChurch ? 1 : 0))
+
   const attentionItems = attentionRes.data.map((row) => ({
     id: row.id,
     title: row.title,
@@ -171,6 +204,7 @@ export async function fetchAppData() {
     attendanceKpi: byName['Average Weekly Attendance'],
     firstTimersKpi: byName['First Timers'],
     firstTimerFunnel: funnelRes.data.map((f) => ({ label: f.label, count: f.count })),
+    areaPeopleStats,
 
     // Life Groups
     lifeGroups,
@@ -224,6 +258,25 @@ export async function createKpiTarget({ name, category, target, frequency }) {
 
   if (error) throw new Error(error.message)
   return hydrateKpi(data)
+}
+
+export async function updateAreaPeopleStats(
+  id,
+  { membershipTarget, membershipActual, activeMembershipTarget, activeMembershipActual, attendanceTarget, attendanceActual, firstTimersTarget, firstTimersActual },
+) {
+  requireSupabase()
+  const payload = {}
+  if (membershipTarget != null) payload.membership_target = Number(membershipTarget)
+  if (membershipActual != null) payload.membership_actual = Number(membershipActual)
+  if (activeMembershipTarget != null) payload.active_membership_target = Number(activeMembershipTarget)
+  if (activeMembershipActual != null) payload.active_membership_actual = Number(activeMembershipActual)
+  if (attendanceTarget != null) payload.attendance_target = Number(attendanceTarget)
+  if (attendanceActual != null) payload.attendance_actual = Number(attendanceActual)
+  if (firstTimersTarget != null) payload.first_timers_target = Number(firstTimersTarget)
+  if (firstTimersActual != null) payload.first_timers_actual = Number(firstTimersActual)
+
+  const { error } = await supabase.from('area_people_stats').update(payload).eq('id', id)
+  if (error) throw new Error(error.message)
 }
 
 export function peso(v) {
