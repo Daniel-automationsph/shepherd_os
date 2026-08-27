@@ -42,7 +42,7 @@ export default function Sidebar({ collapsed }) {
         {!collapsed && (
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.4 }}>SHEPHERD OS</div>
-            <div className="caption">Pinamalayan, Or. Mindoro</div>
+            <div className="caption">JIL Pinamalayan</div>
           </div>
         )}
       </div>
