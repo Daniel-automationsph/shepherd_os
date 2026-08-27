@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: '▦', end: true },
-  { to: '/people', label: 'People', icon: '◔' },
+  { to: '/people', label: 'Membership', icon: '◔' },
   { to: '/life-groups', label: 'Life Groups', icon: '◈' },
   { to: '/outreach', label: 'Outreach', icon: '⬡' },
   { to: '/financial', label: 'Financial', icon: '$' },
