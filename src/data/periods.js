@@ -31,7 +31,7 @@ export const QUARTERS = [
 
 export const ANNUAL = { key: 'FY2025-26', label: 'Full Year: Sep 2025 – Aug 2026', months: MONTHS.map((m) => m.key) }
 
-export const GRANULARITIES = ['Monthly', 'Quarterly', 'Annual']
+export const GRANULARITIES = ['Annual']
 
 /** Returns the list of {key,label,months} options for a given granularity. */
 export function optionsFor(granularity) {
