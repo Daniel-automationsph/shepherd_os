@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
 import PyaGrowth from '../components/PyaGrowth'
+import PyaBarChart from '../components/PyaBarChart'
+import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
+import { usePeriod } from '../context/PeriodContext'
 
 export default function PeopleGrowth() {
   const { data } = useAppData()
+  const { monthlySeries, monthlySeriesLoading, monthlySeriesError, refetchMonthlySeries } = usePeriod()
+  const [trendArea, setTrendArea] = useState(null)
   const {
     totalMembers,
     totalMembersPya,
@@ -110,6 +116,68 @@ export default function PeopleGrowth() {
         </div>
       </SectionBlock>
 
+      {/* --- Trends (PYA + monthly, church-wide and per-area) --- */}
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Trends</h2>
+        <div className="body-muted" style={{ marginBottom: 14 }}>
+          Each chart's first bar is PYA (dashed line marks it across the whole chart) — the rest are the real monthly trend.
+        </div>
+
+        {monthlySeriesLoading ? (
+          <LoadingSpinner label="Loading trend charts..." />
+        ) : monthlySeriesError ? (
+          <div className="card" style={{ textAlign: 'center', padding: 24 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Couldn't load trend charts</div>
+            <div className="body-muted" style={{ marginBottom: 14 }}>
+              {monthlySeriesError}
+            </div>
+            <button
+              onClick={refetchMonthlySeries}
+              style={{ padding: '9px 16px', borderRadius: 8, border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          monthlySeries && (
+            <>
+              <SectionBlock title="Church-Wide">
+                <TrendsGrid series={monthlySeries.total} />
+              </SectionBlock>
+
+              <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+                {monthlySeries.byArea.map((a) => (
+                  <button
+                    key={a.areaName}
+                    onClick={() => setTrendArea(a.areaName)}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: 999,
+                      border: '1px solid var(--line)',
+                      background: (trendArea || monthlySeries.byArea[0]?.areaName) === a.areaName ? 'var(--primary)' : 'var(--surface)',
+                      color: (trendArea || monthlySeries.byArea[0]?.areaName) === a.areaName ? 'white' : 'var(--ink)',
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {a.areaName}
+                  </button>
+                ))}
+              </div>
+
+              {monthlySeries.byArea
+                .filter((a) => a.areaName === (trendArea || monthlySeries.byArea[0]?.areaName))
+                .map((a) => (
+                  <SectionBlock key={a.areaName} title={a.areaName} subtitle={a.isMainChurch ? 'Main Church' : 'Extension Church'}>
+                    <TrendsGrid series={a} />
+                  </SectionBlock>
+                ))}
+            </>
+          )
+        )}
+      </div>
+
       {/* --- By Area (unchanged) --- */}
       {areaPeopleStats && areaPeopleStats.length > 0 && (
         <div className="card" style={{ marginTop: 8, padding: 8, overflowX: 'auto' }}>
@@ -175,6 +243,26 @@ export default function PeopleGrowth() {
           </table>
         </div>
       )}
+    </div>
+  )
+}
+
+function TrendsGrid({ series }) {
+  const charts = [
+    ['membership', 'Category 1', commas],
+    ['activeMembership', 'Category 2', commas],
+    ['attendance', 'Sunday Service Attendance', (v) => v.toFixed(0)],
+    ['firstTimers', 'First Timers', commas],
+    ['totalWorkers', 'Workers', commas],
+  ]
+  return (
+    <div>
+      {charts.map(([key, label, formatter]) => (
+        <div key={key} style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{label}</div>
+          <PyaBarChart pya={series[key]?.pya || 0} months={series[key]?.months || []} color="var(--primary)" valueFormatter={formatter} height={180} />
+        </div>
+      ))}
     </div>
   )
 }
