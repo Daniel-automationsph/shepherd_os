@@ -10,6 +10,8 @@ const METRIC_SPECS = {
   attendance: { section: 'sunday_attendance', subsection: null, label: 'Total Membership', mode: 'average' },
   firstTimers: { section: 'first_timers', subsection: null, label: 'Total Membership', mode: 'sum' },
   membership: { section: 'category1_membership', subsection: null, label: 'Total Membership', mode: 'stock' },
+  activeMembership: { section: 'category2_membership', subsection: null, label: 'Total Membership', mode: 'stock' },
+  totalWorkers: { section: 'workers', subsection: null, label: 'Total Workers', mode: 'stock' },
   tithes: { section: 'finances', subsection: null, label: 'Tithes', mode: 'sum' },
   offerings: { section: 'finances', subsection: null, label: 'Offerings', mode: 'sum' },
   missionOffering: { section: 'finances', subsection: null, label: 'Mission Offering', mode: 'sum' },
@@ -116,47 +118,11 @@ export async function fetchPeriodMetrics(selectedMonths) {
   return { total, byArea }
 }
 
-/**
- * Fetches the full 12-month raw series (Sep–Aug, unaggregated) plus PYA
- * for each tracked church-wide (TOTAL) metric — used for the "PYA +
- * monthly trend" bar charts. Unlike fetchPeriodMetrics above, this
- * ignores the selected date range entirely and always returns the whole
- * year, since a trend chart needs every month to be meaningful.
- */
-export async function fetchMonthlySeries() {
-  if (!supabase) {
-    throw new Error('Supabase is not configured yet — see .env.example.')
-  }
-
-  const { data: areaRow, error: areaErr } = await supabase.from('por_areas').select('id').eq('name', 'TOTAL').single()
-  if (areaErr) throw new Error(`Failed to load TOTAL area: ${areaErr.message}`)
-
-  const { data: metricsRows, error: metricsErr } = await supabase
-    .from('por_metrics')
-    .select('id, section, subsection, label, pya')
-    .eq('area_id', areaRow.id)
-  if (metricsErr) throw new Error(`Failed to load metrics: ${metricsErr.message}`)
-
-  function findMetric(spec) {
-    return metricsRows.find((m) => m.section === spec.section && (m.subsection ?? null) === spec.subsection && m.label === spec.label)
-  }
-
-  const neededMetricIds = Object.values(METRIC_SPECS)
-    .map(findMetric)
-    .filter(Boolean)
-    .map((m) => m.id)
-
-  const { data: valueRows, error: valuesErr } = await supabase
-    .from('por_monthly_values')
-    .select('metric_id, month, value')
-    .in('metric_id', neededMetricIds)
-  if (valuesErr) throw new Error(`Failed to load monthly values: ${valuesErr.message}`)
-
+function seriesForRows(metricsForThisArea, valueRows) {
   const monthLabel = (m) => new Date(m + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-
   const result = {}
   for (const [key, spec] of Object.entries(METRIC_SPECS)) {
-    const metric = findMetric(spec)
+    const metric = metricsForThisArea.find((m) => m.section === spec.section && (m.subsection ?? null) === spec.subsection && m.label === spec.label)
     if (!metric) {
       result[key] = { pya: 0, months: [] }
       continue
@@ -171,6 +137,59 @@ export async function fetchMonthlySeries() {
       })),
     }
   }
-
   return result
+}
+
+/**
+ * Fetches the full 12-month raw series (Sep–Aug, unaggregated) plus PYA
+ * for each tracked metric, for the church-wide TOTAL area AND each real
+ * operational area — used for the "PYA + monthly trend" bar charts on
+ * Reports and Membership. Returns { total: {...}, byArea: [...] }, same
+ * shape as fetchPeriodMetrics. Unlike that function, this ignores the
+ * selected date range entirely and always returns the whole year, since
+ * a trend chart needs every month to be meaningful.
+ */
+export async function fetchMonthlySeries() {
+  if (!supabase) {
+    throw new Error('Supabase is not configured yet — see .env.example.')
+  }
+
+  const { data: areaRows, error: areaErr } = await supabase.from('por_areas').select('id, name, barangay_name, is_extension_church')
+  if (areaErr) throw new Error(`Failed to load areas: ${areaErr.message}`)
+
+  const totalArea = areaRows.find((a) => a.name === 'TOTAL')
+  const realAreas = areaRows.filter((a) => a.name !== 'TOTAL').sort((a, b) => a.name.localeCompare(b.name))
+  if (!totalArea) throw new Error('Could not find the TOTAL area in por_areas.')
+
+  const { data: metricsRows, error: metricsErr } = await supabase
+    .from('por_metrics')
+    .select('id, area_id, section, subsection, label, pya')
+    .in(
+      'area_id',
+      areaRows.map((a) => a.id),
+    )
+  if (metricsErr) throw new Error(`Failed to load metrics: ${metricsErr.message}`)
+
+  const neededMetricIds = metricsRows
+    .filter((m) => Object.values(METRIC_SPECS).some((spec) => spec.section === m.section && (spec.subsection ?? null) === (m.subsection ?? null) && spec.label === m.label))
+    .map((m) => m.id)
+
+  const { data: valueRows, error: valuesErr } = await supabase.from('por_monthly_values').select('metric_id, month, value').in('metric_id', neededMetricIds)
+  if (valuesErr) throw new Error(`Failed to load monthly values: ${valuesErr.message}`)
+
+  const total = seriesForRows(
+    metricsRows.filter((m) => m.area_id === totalArea.id),
+    valueRows,
+  )
+
+  const byArea = realAreas.map((area) => ({
+    areaName: area.barangay_name || area.name,
+    isMainChurch: area.name === 'Sta Rita',
+    ...seriesForRows(
+      metricsRows.filter((m) => m.area_id === area.id),
+      valueRows,
+    ),
+  }))
+
+  return { total, byArea }
 }
