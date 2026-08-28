@@ -73,7 +73,7 @@ export default function Financial() {
                       style={{
                         fontSize: 10,
                         fontWeight: 700,
-                        color: a.isMainChurch ? '#0a3d66' : '#2f6690',
+                        color: a.isMainChurch ? '#00698c' : '#256e42',
                       }}
                     >
                       {a.isMainChurch ? 'Main Church' : 'Extension Church'}
