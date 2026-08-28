@@ -134,7 +134,9 @@ function PeopleSection() {
   const { data, refetch } = useAppData()
   const [form, setForm] = useState({
     totalMembers: data.totalMembers,
+    totalMembersPya: data.totalMembersPya,
     activeMembers: data.activeMembers,
+    activeMembersPya: data.activeMembersPya,
     newMembers: data.newMembers,
     inactiveMembers: data.inactiveMembers,
     membershipGrowthPct: data.membershipGrowthPct,
@@ -168,8 +170,10 @@ function PeopleSection() {
   }
 
   const fields = [
-    ['totalMembers', 'Total Members'],
-    ['activeMembers', 'Active Members'],
+    ['totalMembers', 'Total Members (Category 1 — Actual)'],
+    ['totalMembersPya', 'Total Members (Category 1 — PYA)'],
+    ['activeMembers', 'Active Members (Category 2 — Actual)'],
+    ['activeMembersPya', 'Active Members (Category 2 — PYA)'],
     ['newMembers', 'New Members (this period)'],
     ['inactiveMembers', 'Inactive Members'],
     ['membershipGrowthPct', 'Membership Growth %'],
