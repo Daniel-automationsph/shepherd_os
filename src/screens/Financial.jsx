@@ -8,6 +8,7 @@ import { useAppData } from '../context/DataContext'
 export default function Financial() {
   const { data } = useAppData()
   const { financialKpi: kpi, financialCategories, areaFinancialStats } = data
+
   return (
     <div className="scroll-page">
       <SectionHeader title="Financial Status" subtitle="Monitoring only — not a replacement for full accounting" />
@@ -72,7 +73,7 @@ export default function Financial() {
                       style={{
                         fontSize: 10,
                         fontWeight: 700,
-                        color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)',
+                        color: a.isMainChurch ? '#0a3d66' : '#2f6690',
                       }}
                     >
                       {a.isMainChurch ? 'Main Church' : 'Extension Church'}
