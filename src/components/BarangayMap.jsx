@@ -130,13 +130,12 @@ export default function BarangayMap({
     // isn't reached at all has no active/inactive distinction to make.
     const inactive = reached && b?.active === false
 
-    // Single-hue sequential gradient (strongest → palest), not 5 unrelated
-    // colors — the eye reads darker/more saturated as "more established/
-    // significant" and pale as "not yet developed," so the color itself
-    // communicates the hierarchy (Main Church → ... → Not Reached)
-    // without needing to read the legend first.
-    const fillColor = mainChurch ? '#0a3d66' : extension ? '#2f6690' : inactive ? '#a3c1d9' : reached ? '#6a97ba' : '#e0ecf5'
-    const borderColor = mainChurch ? '#072844' : extension ? '#204a68' : inactive ? '#7a97ab' : reached ? '#4b6f8a' : '#b8cddc'
+    // Sunset-themed palette (per church leadership's direction) rather
+    // than a strict single-hue luminance gradient — Main Church (Neon
+    // Blue) through Reached/Extension Church/Reached-Inactive down to
+    // Not Reached (Faded Gray).
+    const fillColor = mainChurch ? '#00BFFF' : extension ? '#45C978' : inactive ? '#F4DFA3' : reached ? '#E8A05E' : '#DDDCD8'
+    const borderColor = mainChurch ? '#007ca5' : extension ? '#2c824e' : inactive ? '#9e9069' : reached ? '#96683d' : '#8f8f8c'
 
     return {
       fillColor,
@@ -300,14 +299,14 @@ export default function BarangayMap({
                     borderRadius: '50%',
                     border: '1px solid rgba(0,0,0,0.15)',
                     background: b.isMainChurch
-                      ? '#0a3d66'
+                      ? '#00BFFF'
                       : b.extensionChurch
-                        ? '#2f6690'
+                        ? '#45C978'
                         : b.reached && b.active === false
-                          ? '#a3c1d9'
+                          ? '#F4DFA3'
                           : b.reached
-                            ? '#6a97ba'
-                            : '#e0ecf5',
+                            ? '#E8A05E'
+                            : '#DDDCD8',
                     flexShrink: 0,
                   }}
                 />
@@ -331,15 +330,15 @@ export default function BarangayMap({
           fontSize: 11,
         }}
       >
-        <LegendRow color="#0a3d66" label="Main Church" />
+        <LegendRow color="#00BFFF" label="Main Church" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#2f6690" label="Extension Church" />
+        <LegendRow color="#45C978" label="Extension Church" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#6a97ba" label="Reached (Active)" />
+        <LegendRow color="#E8A05E" label="Reached (Active)" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#a3c1d9" label="Reached (Inactive)" />
+        <LegendRow color="#F4DFA3" label="Reached (Inactive)" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#e0ecf5" label="Not reached" />
+        <LegendRow color="#DDDCD8" label="Not reached" />
       </div>
     </div>
   )
