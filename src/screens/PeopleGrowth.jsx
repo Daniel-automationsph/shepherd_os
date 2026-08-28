@@ -1,91 +1,127 @@
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
+import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
 
 export default function PeopleGrowth() {
   const { data } = useAppData()
-  const { totalMembers, activeMembers, newMembers, inactiveMembers, membershipGrowthPct, attendanceKpi, firstTimerFunnel, areaPeopleStats } = data
-
-  const metrics = [
-    ['Total Members', totalMembers, null],
-    ['Active Members', activeMembers, null],
-    ['New Members', newMembers, null],
-    ['Inactive Members', inactiveMembers, null],
-    ['Growth', `+${membershipGrowthPct}%`, 'var(--status-on-target)'],
-  ]
+  const {
+    totalMembers,
+    activeMembers,
+    inactiveMembers,
+    membershipGrowthPct,
+    attendanceKpi,
+    firstTimersKpi,
+    firstTimerFunnel,
+    areaPeopleStats,
+  } = data
 
   const maxCount = firstTimerFunnel[0].count
-  const palette = ['#2f5233', '#c98a2c', '#6e8fa3', '#8e5b45', '#4c7a50']
+  const funnelPalette = ['#2f5233', '#c98a2c', '#6e8fa3', '#8e5b45', '#4c7a50']
+
+  // Church-wide Workers total isn't tracked as its own figure — it's
+  // computed by summing the per-area Workers numbers (editable in Admin
+  // Console → Area People) rather than needing a separate database field.
+  const workers = (areaPeopleStats || []).reduce(
+    (sum, a) => ({
+      fullTime: sum.fullTime + (a.fullTimeWorkers || 0),
+      partTime: sum.partTime + (a.partTimeWorkers || 0),
+      volunteer: sum.volunteer + (a.volunteerWorkers || 0),
+      total: sum.total + (a.totalWorkers || 0),
+    }),
+    { fullTime: 0, partTime: 0, volunteer: 0, total: 0 },
+  )
 
   return (
     <div className="scroll-page">
-      <SectionHeader title="People & Growth" subtitle="Membership, attendance, and first-timer metrics" />
+      <SectionHeader title="Membership" subtitle="Category 1, Category 2, Attendance, First Timers, and Workers" />
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: 20 }}>
-        {metrics.map(([label, value, color]) => (
-          <div className="card" key={label} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div className="label">{label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, marginTop: 8, color: color || 'var(--ink)' }}>{value}</div>
-          </div>
-        ))}
-      </div>
+      {/* --- Category 1 --- */}
+      <SectionBlock title="Category 1" subtitle="SSAM + LGAM + SSAM/LGAM">
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          <Fact label="Total Membership" value={commas(totalMembers)} />
+          <Fact label="Growth" value={`+${membershipGrowthPct}%`} color="var(--status-on-target)" />
+        </div>
+      </SectionBlock>
 
-      <div className="two-col">
-        <div className="card">
-          <div style={{ display: 'flex' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Attendance</h2>
-            <StatusBadge status={attendanceKpi.status} />
-          </div>
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 14 }}>
-            <MiniStat label="Average" value={attendanceKpi.actual.toFixed(0)} />
-            <MiniStat label="Target" value={attendanceKpi.target.toFixed(0)} />
-            <MiniStat label="Achievement" value={`${attendanceKpi.achievementPct.toFixed(1)}%`} />
-            {attendanceKpi.momChangePct != null && (
-              <MiniStat
-                label="vs Last Month"
-                value={`${attendanceKpi.momChangePct >= 0 ? '+' : ''}${attendanceKpi.momChangePct.toFixed(1)}%`}
-              />
-            )}
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <TrendChart points={attendanceKpi.trend} color="var(--primary)" />
-          </div>
+      {/* --- Category 2 --- */}
+      <SectionBlock title="Category 2" subtitle="SSAM + SSAM/LGAM">
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          <Fact label="Total Membership" value={commas(activeMembers)} />
+          <Fact label="Not in Category 2" value={commas(inactiveMembers)} />
+        </div>
+      </SectionBlock>
+
+      {/* --- Sunday Service Attendance --- */}
+      <SectionBlock title="Sunday Service Attendance">
+        <div style={{ display: 'flex' }}>
+          <div style={{ flex: 1 }} />
+          <StatusBadge status={attendanceKpi.status} />
+        </div>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 10 }}>
+          <Fact label="Average" value={attendanceKpi.actual.toFixed(0)} />
+          <Fact label="Target" value={attendanceKpi.target.toFixed(0)} />
+          <Fact label="Achievement" value={`${attendanceKpi.achievementPct.toFixed(1)}%`} />
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <TrendChart points={attendanceKpi.trend} color="var(--primary)" />
+        </div>
+      </SectionBlock>
+
+      {/* --- First Timers --- */}
+      <SectionBlock title="First Timers">
+        <div style={{ display: 'flex' }}>
+          <div style={{ flex: 1 }} />
+          <StatusBadge status={firstTimersKpi.status} />
+        </div>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 10, marginBottom: 18 }}>
+          <Fact label="This Period" value={commas(firstTimersKpi.actual)} />
+          <Fact label="Target" value={commas(firstTimersKpi.target)} />
+          <Fact label="Achievement" value={`${firstTimersKpi.achievementPct.toFixed(1)}%`} />
         </div>
 
-        <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700 }}>Discipleship Pipeline</h2>
-          <div className="body-muted" style={{ marginTop: 4, marginBottom: 16 }}>
-            Evangelized → Pre-Encounter → Encounter → Post-Encounter → Water Baptized
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {firstTimerFunnel.map((stage, i) => (
-              <div key={stage.label}>
-                <div style={{ display: 'flex' }}>
-                  <div style={{ flex: 1, fontSize: 14 }}>{stage.label}</div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{stage.count}</div>
-                </div>
-                <div style={{ marginTop: 4, height: 8, borderRadius: 6, background: 'var(--surface-muted)', overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      width: `${(stage.count / maxCount) * 100}%`,
-                      height: '100%',
-                      background: palette[i % palette.length],
-                    }}
-                  />
-                </div>
+        <div className="body-muted" style={{ marginBottom: 12 }}>
+          Discipleship Pipeline: Evangelized → Pre-Encounter → Encounter → Post-Encounter → Water Baptized
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {firstTimerFunnel.map((stage, i) => (
+            <div key={stage.label}>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: 1, fontSize: 14 }}>{stage.label}</div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{stage.count}</div>
               </div>
-            ))}
-          </div>
+              <div style={{ marginTop: 4, height: 8, borderRadius: 6, background: 'var(--surface-muted)', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${(stage.count / maxCount) * 100}%`,
+                    height: '100%',
+                    background: funnelPalette[i % funnelPalette.length],
+                  }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      </SectionBlock>
 
+      {/* --- Workers --- */}
+      <SectionBlock title="Workers" subtitle="Summed across all areas — edit per-area figures in Admin Console → Area People">
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          <Fact label="Full-time" value={commas(workers.fullTime)} />
+          <Fact label="Part-time" value={commas(workers.partTime)} />
+          <Fact label="Volunteer" value={commas(workers.volunteer)} />
+          <Fact label="Total" value={commas(workers.total)} />
+        </div>
+      </SectionBlock>
+
+      {/* --- By Area (unchanged) --- */}
       {areaPeopleStats && areaPeopleStats.length > 0 && (
-        <div className="card" style={{ marginTop: 20, padding: 8, overflowX: 'auto' }}>
+        <div className="card" style={{ marginTop: 8, padding: 8, overflowX: 'auto' }}>
           <div style={{ padding: '12px 12px 4px' }}>
             <h2 style={{ fontSize: 15, fontWeight: 700 }}>By Area</h2>
             <div className="body-muted" style={{ marginTop: 2 }}>
-              Membership, attendance, and first-timers for the Main Church and each Extension Church.
+              Membership, attendance, first-timers, and workers for the Main Church and each Extension Church.
             </div>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720, marginTop: 8 }}>
@@ -148,11 +184,25 @@ export default function PeopleGrowth() {
   )
 }
 
-function MiniStat({ label, value }) {
+function SectionBlock({ title, subtitle, children }) {
+  return (
+    <div className="card" style={{ marginBottom: 20 }}>
+      <h2 style={{ fontSize: 15, fontWeight: 700 }}>{title}</h2>
+      {subtitle && (
+        <div className="body-muted" style={{ marginTop: 2, marginBottom: 4 }}>
+          {subtitle}
+        </div>
+      )}
+      <div style={{ marginTop: 12 }}>{children}</div>
+    </div>
+  )
+}
+
+function Fact({ label, value, color }) {
   return (
     <div>
       <div className="label">{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>{value}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3, color: color || 'var(--ink)' }}>{value}</div>
     </div>
   )
 }
