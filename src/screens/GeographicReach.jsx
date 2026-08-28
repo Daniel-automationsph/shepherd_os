@@ -56,19 +56,31 @@ export default function GeographicReach() {
                       ? '#1d5fa8'
                       : selected.extensionChurch
                         ? 'var(--accent)'
-                        : selected.reached
-                          ? 'var(--status-on-target)'
-                          : 'var(--status-critical)',
+                        : selected.reached && selected.active === false
+                          ? '#5c6873'
+                          : selected.reached
+                            ? 'var(--status-on-target)'
+                            : 'var(--status-critical)',
                     background: selected.isMainChurch
                       ? '#dce9f7'
                       : selected.extensionChurch
                         ? 'var(--accent-soft)'
-                        : selected.reached
-                          ? 'var(--status-on-target-bg)'
-                          : 'var(--status-critical-bg)',
+                        : selected.reached && selected.active === false
+                          ? '#e4e8eb'
+                          : selected.reached
+                            ? 'var(--status-on-target-bg)'
+                            : 'var(--status-critical-bg)',
                   }}
                 >
-                  {selected.isMainChurch ? 'Main Church' : selected.extensionChurch ? 'Extension Church' : selected.reached ? 'Reached' : 'Not Reached'}
+                  {selected.isMainChurch
+                    ? 'Main Church'
+                    : selected.extensionChurch
+                      ? 'Extension Church'
+                      : selected.reached && selected.active === false
+                        ? 'Reached (Inactive)'
+                        : selected.reached
+                          ? 'Reached (Active)'
+                          : 'Not Reached'}
                 </span>
               </div>
               <div className="body-muted">
@@ -127,7 +139,15 @@ export default function GeographicReach() {
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: b.isMainChurch ? '#1d5fa8' : b.extensionChurch ? 'var(--accent)' : b.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
+                  background: b.isMainChurch
+                    ? '#1d5fa8'
+                    : b.extensionChurch
+                      ? 'var(--accent)'
+                      : b.reached && b.active === false
+                        ? '#8a97a3'
+                        : b.reached
+                          ? 'var(--status-on-target)'
+                          : 'var(--status-critical)',
                   flexShrink: 0,
                 }}
               />
@@ -161,6 +181,21 @@ export default function GeographicReach() {
                     }}
                   >
                     EXTENSION CHURCH
+                  </span>
+                )}
+                {b.reached && !b.isMainChurch && !b.extensionChurch && b.active === false && (
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#5c6873',
+                      background: '#e4e8eb',
+                      padding: '2px 6px',
+                      borderRadius: 999,
+                    }}
+                  >
+                    INACTIVE
                   </span>
                 )}
               </div>
