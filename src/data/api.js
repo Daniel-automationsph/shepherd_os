@@ -245,7 +245,9 @@ export async function fetchAppData() {
   return {
     // People & Growth
     totalMembers: orgStats.total_members,
+    totalMembersPya: Number(orgStats.total_members_pya ?? 0),
     activeMembers: orgStats.active_members,
+    activeMembersPya: Number(orgStats.active_members_pya ?? 0),
     newMembers: orgStats.new_members,
     inactiveMembers: orgStats.inactive_members,
     membershipGrowthPct: Number(orgStats.membership_growth_pct),
@@ -403,7 +405,9 @@ export async function updateOrgStats(fields) {
   requireSupabase()
   const payload = {}
   if (fields.totalMembers != null) payload.total_members = Number(fields.totalMembers)
+  if (fields.totalMembersPya != null) payload.total_members_pya = Number(fields.totalMembersPya)
   if (fields.activeMembers != null) payload.active_members = Number(fields.activeMembers)
+  if (fields.activeMembersPya != null) payload.active_members_pya = Number(fields.activeMembersPya)
   if (fields.newMembers != null) payload.new_members = Number(fields.newMembers)
   if (fields.inactiveMembers != null) payload.inactive_members = Number(fields.inactiveMembers)
   if (fields.membershipGrowthPct != null) payload.membership_growth_pct = Number(fields.membershipGrowthPct)
