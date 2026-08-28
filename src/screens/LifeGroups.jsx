@@ -2,8 +2,17 @@ import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
-import { KPI_STATUS } from '../data/api'
+import { KPI_STATUS, commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
+
+const DEMO_LABELS = [
+  ['men', 'Men'],
+  ['women', 'Women'],
+  ['youngAdult', 'Young Adult'],
+  ['kkb', 'KKB'],
+  ['children', 'Children'],
+  ['hetero', 'Hetero'],
+]
 
 export default function LifeGroups() {
   const { data } = useAppData()
@@ -15,6 +24,19 @@ export default function LifeGroups() {
   const healthy = lifeGroups.filter((g) => g.status === KPI_STATUS.ON_TARGET).length
   const attention = lifeGroups.filter((g) => g.status === KPI_STATUS.ATTENTION).length
   const critical = lifeGroups.filter((g) => g.status === KPI_STATUS.CRITICAL).length
+
+  // Church-wide demographic totals — summed across all churches, since
+  // there's no separate church-wide table for this (only per-church data).
+  const demoTotals = DEMO_LABELS.reduce((acc, [key]) => {
+    acc[key] = lifeGroups.reduce(
+      (sum, g) => ({
+        target: sum.target + (g.demographics?.[key]?.target || 0),
+        actual: sum.actual + (g.demographics?.[key]?.actual || 0),
+      }),
+      { target: 0, actual: 0 },
+    )
+    return acc
+  }, {})
 
   return (
     <div className="scroll-page">
@@ -125,6 +147,72 @@ export default function LifeGroups() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* --- By Demographic --- */}
+      <div style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>By Demographic</h2>
+
+        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginBottom: 16 }}>
+          {DEMO_LABELS.map(([key, label]) => {
+            const t = demoTotals[key]
+            const pct = t.target > 0 ? (t.actual / t.target) * 100 : 0
+            const isLow = t.target > 0 && pct < 60
+            return (
+              <div className="card" key={key}>
+                <div className="label">{label}</div>
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    marginTop: 6,
+                    color: isLow ? 'var(--status-critical)' : 'var(--ink)',
+                  }}
+                >
+                  {commas(t.actual)}
+                </div>
+                <div className="caption" style={{ marginTop: 2 }}>
+                  of {commas(t.target)} target
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="card" style={{ padding: 8, overflowX: 'auto' }}>
+          <div style={{ padding: '12px 12px 4px' }}>
+            <div className="body-muted">Per church — actual vs target for each demographic.</div>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720, marginTop: 8 }}>
+            <thead>
+              <tr style={{ background: 'var(--surface-muted)' }}>
+                {['Church', ...DEMO_LABELS.map(([, label]) => label)].map((h) => (
+                  <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {lifeGroups.map((g) => (
+                <tr key={g.name} style={{ borderTop: '1px solid var(--line)' }}>
+                  <td style={{ padding: '10px 14px', fontWeight: 700, fontSize: 13.5 }}>{g.name}</td>
+                  {DEMO_LABELS.map(([key]) => {
+                    const d = g.demographics?.[key] || { target: 0, actual: 0 }
+                    const pct = d.target > 0 ? (d.actual / d.target) * 100 : null
+                    const isLow = pct != null && pct < 60
+                    return (
+                      <td key={key} style={{ padding: '10px 14px', fontSize: 13.5 }}>
+                        <span style={{ color: isLow ? 'var(--status-critical)' : 'var(--ink)', fontWeight: isLow ? 700 : 400 }}>{d.actual}</span>
+                        <span className="caption"> / {d.target}</span>
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
