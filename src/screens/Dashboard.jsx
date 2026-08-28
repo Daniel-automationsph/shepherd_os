@@ -3,21 +3,24 @@ import SectionHeader from '../components/SectionHeader'
 import KpiStatCard from '../components/KpiStatCard'
 import BarangayMap from '../components/BarangayMap'
 import AttentionTile from '../components/AttentionTile'
-import ModeToggle from '../components/ModeToggle'
-import { LoadingSpinner } from '../components/Spinner'
-import { peso, commas } from '../data/api'
+import StatusBadge from '../components/StatusBadge'
+import TrendChart from '../components/TrendChart'
+import AchievementBar from '../components/AchievementBar'
+import DonutChart from '../components/DonutChart'
+import RankingBarChart from '../components/RankingBarChart'
+import { peso, commas, statusFromAchievement } from '../data/api'
 import { useAppData } from '../context/DataContext'
-import { usePeriod } from '../context/PeriodContext'
 
 export default function Dashboard() {
-  const [mode, setMode] = useState('Current')
   const { data } = useAppData()
   const [selected, setSelected] = useState(null)
 
   const {
     lifeGroupHeadcountKpi,
     firstTimersKpi,
+    attendanceKpi,
     financialKpi,
+    financialCategories,
     geographicCoverageKpi,
     lifeGroupAchievementPct,
     firstTimerAchievementPct,
@@ -29,20 +32,41 @@ export default function Dashboard() {
     attentionItems,
     lifeGroups,
     totalLifeGroups,
+    totalMembers,
+    activeMembers,
+    inactiveMembers,
+    membershipGrowthPct,
   } = data
 
   const healthy = lifeGroups.filter((g) => g.achievementPct >= 100).length
   const attention = lifeGroups.filter((g) => g.achievementPct >= 80 && g.achievementPct < 100).length
   const critical = lifeGroups.filter((g) => g.achievementPct < 80).length
 
+  // Overall Health — one glance answer to "how are we doing right now?",
+  // averaged across the 5 pillars this page covers.
+  const overallHealthPct =
+    (lifeGroupAchievementPct + firstTimerAchievementPct + financialAchievementPct + reachAchievementPct + attendanceKpi.achievementPct) / 5
+  const overallStatus = statusFromAchievement(overallHealthPct)
+
   return (
     <div className="scroll-page">
-      <SectionHeader
-        title="Main Overview"
-        subtitle="See the church. Measure the mission. Manage the ministry."
-        trailing={<ModeToggle mode={mode} onChange={setMode} />}
-      />
+      <SectionHeader title="Main Overview" subtitle="See the church. Measure the mission. Manage the ministry." />
 
+      {/* --- Overall Health --- */}
+      <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+        <div>
+          <div className="label">Overall Health</div>
+          <div className="stat-large" style={{ marginTop: 6, fontSize: 40 }}>
+            {overallHealthPct.toFixed(0)}%
+          </div>
+        </div>
+        <StatusBadge status={overallStatus} />
+        <div className="body-muted" style={{ flex: 1, minWidth: 200 }}>
+          Average achievement across Life Groups, First Timers, Attendance, Financial, and Geographic Reach.
+        </div>
+      </div>
+
+      {/* --- Reach (map) + Immediate Attention --- */}
       <div className="two-col" style={{ marginBottom: 20 }}>
         <div className="card">
           <BarangayMap barangays={barangays} selectedName={selected?.name} onSelect={setSelected} />
@@ -64,106 +88,111 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {mode === 'Historical' ? (
-        <HistoricalKpiRow />
-      ) : (
-        <div className="kpi-row" style={{ marginBottom: 28 }}>
-          <KpiStatCard
-            label="LIFE GROUPS"
-            achievementPct={lifeGroupAchievementPct}
-            subtitle={`${lifeGroupHeadcountKpi.actual} / ${lifeGroupHeadcountKpi.target} headcount`}
-            trend={lifeGroupHeadcountKpi.trend}
-          />
-          <KpiStatCard
-            label="FIRST TIMERS"
-            achievementPct={firstTimerAchievementPct}
-            subtitle={`${firstTimersKpi.actual} / ${firstTimersKpi.target} this month`}
-            trend={firstTimersKpi.trend}
-          />
-          <KpiStatCard
-            label="FINANCIAL"
-            achievementPct={financialAchievementPct}
-            subtitle={`${peso(financialKpi.actual)} of ${peso(financialKpi.target)}`}
-            trend={financialKpi.trend}
-          />
-          <KpiStatCard
-            label="GEOGRAPHIC REACH"
-            achievementPct={reachAchievementPct}
-            subtitle={`${barangaysReached} / ${totalBarangays} barangays`}
-            trend={geographicCoverageKpi.trend}
-          />
-        </div>
-      )}
+      <div className="kpi-row" style={{ marginBottom: 28 }}>
+        <KpiStatCard
+          label="LIFE GROUPS"
+          achievementPct={lifeGroupAchievementPct}
+          subtitle={`${lifeGroupHeadcountKpi.actual} / ${lifeGroupHeadcountKpi.target} headcount`}
+          trend={lifeGroupHeadcountKpi.trend}
+        />
+        <KpiStatCard
+          label="FIRST TIMERS"
+          achievementPct={firstTimerAchievementPct}
+          subtitle={`${firstTimersKpi.actual} / ${firstTimersKpi.target} this month`}
+          trend={firstTimersKpi.trend}
+        />
+        <KpiStatCard
+          label="FINANCIAL"
+          achievementPct={financialAchievementPct}
+          subtitle={`${peso(financialKpi.actual)} of ${peso(financialKpi.target)}`}
+          trend={financialKpi.trend}
+        />
+        <KpiStatCard
+          label="GEOGRAPHIC REACH"
+          achievementPct={reachAchievementPct}
+          subtitle={`${barangaysReached} / ${totalBarangays} barangays`}
+          trend={geographicCoverageKpi.trend}
+        />
+      </div>
 
-      <div className="card" style={{ marginTop: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Life Group Performance</h2>
-        <div className="caption" style={{ marginBottom: 16 }}>
-          Always shows current live status, regardless of the Date Range selection above.
+      {/* --- People --- */}
+      <PillarSection title="People">
+        <div className="two-col-reverse">
+          <div>
+            <Stat value={commas(totalMembers)} label="Total Members" />
+            <div style={{ display: 'flex', gap: 28, marginTop: 16, flexWrap: 'wrap' }}>
+              <Stat value={commas(activeMembers)} label="Category 2" />
+              <Stat value={commas(inactiveMembers)} label="Not in Category 2" />
+              <Stat value={`+${membershipGrowthPct}%`} label="Growth" color="var(--status-on-target)" />
+            </div>
+          </div>
+          <div>
+            <DonutChart
+              segments={[
+                { label: 'In Category 2', value: activeMembers, color: '#2f5233' },
+                { label: 'Not in Category 2', value: inactiveMembers, color: '#c98a2c' },
+              ]}
+              centerValue={commas(totalMembers)}
+              centerLabel="Total"
+              height={160}
+            />
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
+      </PillarSection>
+
+      {/* --- Attendance --- */}
+      <PillarSection title="Attendance">
+        <div style={{ display: 'flex' }}>
+          <div style={{ flex: 1 }} />
+          <StatusBadge status={attendanceKpi.status} />
+        </div>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 10 }}>
+          <Stat value={attendanceKpi.actual.toFixed(0)} label="Average" />
+          <Stat value={attendanceKpi.target.toFixed(0)} label="Target (PYA)" />
+          <Stat value={`${attendanceKpi.achievementPct.toFixed(1)}%`} label="Achievement" />
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <TrendChart points={attendanceKpi.trend} color="var(--primary)" />
+        </div>
+      </PillarSection>
+
+      {/* --- Financial --- */}
+      <PillarSection title="Financial">
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', marginBottom: 16 }}>
+          <Stat value={peso(financialKpi.actual)} label="This Month" />
+          <Stat value={peso(financialKpi.target)} label="Target (PYA)" />
+          <Stat value={`${financialKpi.achievementPct.toFixed(1)}%`} label="Achievement" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {financialCategories.map((cat) => (
+            <AchievementBar key={cat.name} label={cat.name} target={cat.target} actual={cat.actual} formatter={peso} />
+          ))}
+        </div>
+      </PillarSection>
+
+      {/* --- Life Groups --- */}
+      <PillarSection title="Life Groups">
+        <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', marginBottom: 16 }}>
           <Stat value={totalLifeGroups} label="Groups" />
           <Stat value={`${lifeGroupHeadcountKpi.actual} / ${lifeGroupHeadcountKpi.target}`} label="Headcount" />
           <Stat value={healthy} label="Healthy" color="var(--status-on-target)" />
           <Stat value={attention} label="Attention" color="var(--status-attention)" />
           <Stat value={critical} label="Critical" color="var(--status-critical)" />
         </div>
-      </div>
+        <div className="body-muted" style={{ marginBottom: 8, fontSize: 13 }}>
+          By Church — Achievement Ranking
+        </div>
+        <RankingBarChart data={lifeGroups.map((g) => ({ label: g.name, value: g.achievementPct }))} />
+      </PillarSection>
     </div>
   )
 }
 
-function HistoricalKpiRow() {
-  const { selected, metrics, loading, error, refetch } = usePeriod()
-
-  if (loading) {
-    return (
-      <div style={{ marginBottom: 28 }}>
-        <LoadingSpinner label={`Loading figures for ${selected?.label}...`} />
-      </div>
-    )
-  }
-  if (error) {
-    return (
-      <div className="card" style={{ textAlign: 'center', padding: 20, marginBottom: 28 }}>
-        <div className="body-muted" style={{ marginBottom: 10 }}>
-          {error}
-        </div>
-        <button
-          onClick={refetch}
-          style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
-        >
-          Try again
-        </button>
-      </div>
-    )
-  }
-  if (!metrics) return null
-
-  const cards = [
-    ['LIFE GROUP MEMBERSHIP', commas(metrics.lifeGroupMembership.actual), 'Snapshot as of this period'],
-    ['FIRST TIMERS', commas(metrics.firstTimers.actual), `of ${commas(metrics.firstTimers.target)} target`],
-    ['TOTAL GIVING', peso(metrics.totalGiving.actual), `of ${peso(metrics.totalGiving.target)} target`],
-    ['ATTENDANCE', metrics.attendance.actual.toFixed(0), `of ${metrics.attendance.target.toFixed(0)} target`],
-  ]
-
+function PillarSection({ title, children }) {
   return (
-    <div style={{ marginBottom: 28 }}>
-      <div className="caption" style={{ marginBottom: 10 }}>
-        Showing {selected?.label} — Geographic Reach isn&apos;t available historically, so it's omitted here.
-      </div>
-      <div className="kpi-row">
-        {cards.map(([label, value, sub]) => (
-          <div className="card" key={label}>
-            <div className="label">{label}</div>
-            <div className="stat-large" style={{ marginTop: 10 }}>
-              {value}
-            </div>
-            <div className="body-muted" style={{ marginTop: 6 }}>
-              {sub}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="card" style={{ marginBottom: 20 }}>
+      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>{title}</h2>
+      {children}
     </div>
   )
 }
