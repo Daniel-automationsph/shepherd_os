@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { GRANULARITIES, optionsFor, defaultMonthlyKey } from '../data/periods'
-import { fetchPeriodMetrics } from '../data/periodApi'
+import { fetchPeriodMetrics, fetchMonthlySeries } from '../data/periodApi'
 
 const PeriodContext = createContext(null)
 
@@ -10,6 +10,13 @@ export function PeriodProvider({ children }) {
   const [metrics, setMetrics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // The "PYA + monthly trend" bar charts always show the full year
+  // regardless of the selected period, so this is fetched once on mount
+  // rather than refetching every time the period selector changes.
+  const [monthlySeries, setMonthlySeries] = useState(null)
+  const [monthlySeriesLoading, setMonthlySeriesLoading] = useState(true)
+  const [monthlySeriesError, setMonthlySeriesError] = useState(null)
 
   const options = useMemo(() => optionsFor(granularity), [granularity])
   const selected = useMemo(() => options.find((o) => o.key === selectedKey) || options[0], [options, selectedKey])
@@ -43,9 +50,27 @@ export function PeriodProvider({ children }) {
     }
   }, [])
 
+  const loadMonthlySeries = useCallback(async () => {
+    setMonthlySeriesLoading(true)
+    setMonthlySeriesError(null)
+    try {
+      const result = await fetchMonthlySeries()
+      setMonthlySeries(result)
+    } catch (err) {
+      console.error(err)
+      setMonthlySeriesError(err.message || 'Could not load the monthly trend.')
+    } finally {
+      setMonthlySeriesLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (selected) load(selected.months)
   }, [selected, load])
+
+  useEffect(() => {
+    loadMonthlySeries()
+  }, [loadMonthlySeries])
 
   const value = {
     granularity,
@@ -60,6 +85,10 @@ export function PeriodProvider({ children }) {
     loading,
     error,
     refetch: () => selected && load(selected.months),
+    monthlySeries,
+    monthlySeriesLoading,
+    monthlySeriesError,
+    refetchMonthlySeries: loadMonthlySeries,
   }
 
   return <PeriodContext.Provider value={value}>{children}</PeriodContext.Provider>
