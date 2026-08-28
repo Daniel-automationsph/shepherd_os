@@ -74,11 +74,11 @@ export default function Reports() {
                 target={metrics.total.attendance.target.toFixed(0)}
               />
               {monthlySeries && (
-                <PyaBarChart pya={monthlySeries.attendance.pya} months={monthlySeries.attendance.months} color="var(--primary)" valueFormatter={(v) => v.toFixed(0)} />
+                <PyaBarChart pya={monthlySeries.total.attendance.pya} months={monthlySeries.total.attendance.months} color="var(--primary)" valueFormatter={(v) => v.toFixed(0)} />
               )}
               <MetricRow label="First Timers" actual={commas(metrics.total.firstTimers.actual)} target={commas(metrics.total.firstTimers.target)} />
               {monthlySeries && (
-                <PyaBarChart pya={monthlySeries.firstTimers.pya} months={monthlySeries.firstTimers.months} color="var(--accent)" valueFormatter={commas} />
+                <PyaBarChart pya={monthlySeries.total.firstTimers.pya} months={monthlySeries.total.firstTimers.months} color="var(--accent)" valueFormatter={commas} />
               )}
               <MetricRow label="Total Membership (as of period)" actual={commas(metrics.total.membership.actual)} target={null} />
             </ReportSection>
@@ -86,7 +86,7 @@ export default function Reports() {
             <ReportSection title="Financial">
               <MetricRow label="Tithes" actual={peso(metrics.total.tithes.actual)} target={peso(metrics.total.tithes.target)} />
               {monthlySeries && (
-                <PyaBarChart pya={monthlySeries.tithes.pya} months={monthlySeries.tithes.months} color="var(--accent)" valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`} />
+                <PyaBarChart pya={monthlySeries.total.tithes.pya} months={monthlySeries.total.tithes.months} color="var(--accent)" valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`} />
               )}
               <MetricRow label="Offerings" actual={peso(metrics.total.offerings.actual)} target={peso(metrics.total.offerings.target)} />
               <MetricRow label="Mission Offering" actual={peso(metrics.total.missionOffering.actual)} target={peso(metrics.total.missionOffering.target)} />
@@ -94,8 +94,8 @@ export default function Reports() {
               <MetricRow label="Total Giving" actual={peso(metrics.total.totalGiving.actual)} target={peso(metrics.total.totalGiving.target)} bold />
               {monthlySeries && (
                 <PyaBarChart
-                  pya={monthlySeries.totalGiving.pya}
-                  months={monthlySeries.totalGiving.months}
+                  pya={monthlySeries.total.totalGiving.pya}
+                  months={monthlySeries.total.totalGiving.months}
                   color="var(--primary)"
                   valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`}
                 />
@@ -106,8 +106,8 @@ export default function Reports() {
               <MetricRow label="Life Group Membership (as of period)" actual={commas(metrics.total.lifeGroupMembership.actual)} target={null} />
               {monthlySeries && (
                 <PyaBarChart
-                  pya={monthlySeries.lifeGroupMembership.pya}
-                  months={monthlySeries.lifeGroupMembership.months}
+                  pya={monthlySeries.total.lifeGroupMembership.pya}
+                  months={monthlySeries.total.lifeGroupMembership.months}
                   color="var(--accent)"
                   valueFormatter={commas}
                 />
