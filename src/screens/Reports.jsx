@@ -1,17 +1,20 @@
 import SectionHeader from '../components/SectionHeader'
 import { LoadingSpinner } from '../components/Spinner'
+import PeriodSelector from '../components/PeriodSelector'
+import PyaBarChart from '../components/PyaBarChart'
 import { usePeriod } from '../context/PeriodContext'
 import { peso, commas } from '../data/api'
 import { UNREPORTED_MONTHS } from '../data/periods'
 
 export default function Reports() {
-  const { selected, metrics, loading, error, refetch } = usePeriod()
+  const { selected, metrics, loading, error, refetch, monthlySeries, monthlySeriesLoading } = usePeriod()
 
   return (
     <div className="scroll-page" style={{ maxWidth: 900 }}>
       <SectionHeader
         title="Reports"
-        subtitle="Real figures for the period selected at the top right — not a fixed weekly/monthly template."
+        subtitle="Real figures for whatever period you pick below — not a fixed weekly/monthly template."
+        trailing={<PeriodSelector />}
       />
 
       <div className="card" style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -65,22 +68,85 @@ export default function Reports() {
         metrics && (
           <>
             <ReportSection title="Attendance & Membership">
-              <MetricRow label="Average Weekly Attendance" actual={metrics.attendance.actual.toFixed(0)} target={metrics.attendance.target.toFixed(0)} />
-              <MetricRow label="First Timers" actual={commas(metrics.firstTimers.actual)} target={commas(metrics.firstTimers.target)} />
-              <MetricRow label="Total Membership (as of period)" actual={commas(metrics.membership.actual)} target={null} />
+              <MetricRow
+                label="Average Weekly Attendance"
+                actual={metrics.total.attendance.actual.toFixed(0)}
+                target={metrics.total.attendance.target.toFixed(0)}
+              />
+              {monthlySeries && (
+                <PyaBarChart pya={monthlySeries.attendance.pya} months={monthlySeries.attendance.months} color="var(--primary)" valueFormatter={(v) => v.toFixed(0)} />
+              )}
+              <MetricRow label="First Timers" actual={commas(metrics.total.firstTimers.actual)} target={commas(metrics.total.firstTimers.target)} />
+              {monthlySeries && (
+                <PyaBarChart pya={monthlySeries.firstTimers.pya} months={monthlySeries.firstTimers.months} color="var(--accent)" valueFormatter={commas} />
+              )}
+              <MetricRow label="Total Membership (as of period)" actual={commas(metrics.total.membership.actual)} target={null} />
             </ReportSection>
 
             <ReportSection title="Financial">
-              <MetricRow label="Tithes" actual={peso(metrics.tithes.actual)} target={peso(metrics.tithes.target)} />
-              <MetricRow label="Offerings" actual={peso(metrics.offerings.actual)} target={peso(metrics.offerings.target)} />
-              <MetricRow label="Mission Offering" actual={peso(metrics.missionOffering.actual)} target={peso(metrics.missionOffering.target)} />
-              <MetricRow label="Pledges" actual={peso(metrics.pledges.actual)} target={peso(metrics.pledges.target)} />
-              <MetricRow label="Total Giving" actual={peso(metrics.totalGiving.actual)} target={peso(metrics.totalGiving.target)} bold />
+              <MetricRow label="Tithes" actual={peso(metrics.total.tithes.actual)} target={peso(metrics.total.tithes.target)} />
+              {monthlySeries && (
+                <PyaBarChart pya={monthlySeries.tithes.pya} months={monthlySeries.tithes.months} color="var(--accent)" valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`} />
+              )}
+              <MetricRow label="Offerings" actual={peso(metrics.total.offerings.actual)} target={peso(metrics.total.offerings.target)} />
+              <MetricRow label="Mission Offering" actual={peso(metrics.total.missionOffering.actual)} target={peso(metrics.total.missionOffering.target)} />
+              <MetricRow label="Pledges" actual={peso(metrics.total.pledges.actual)} target={peso(metrics.total.pledges.target)} />
+              <MetricRow label="Total Giving" actual={peso(metrics.total.totalGiving.actual)} target={peso(metrics.total.totalGiving.target)} bold />
+              {monthlySeries && (
+                <PyaBarChart
+                  pya={monthlySeries.totalGiving.pya}
+                  months={monthlySeries.totalGiving.months}
+                  color="var(--primary)"
+                  valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`}
+                />
+              )}
             </ReportSection>
 
             <ReportSection title="Life Groups">
-              <MetricRow label="Life Group Membership (as of period)" actual={commas(metrics.lifeGroupMembership.actual)} target={null} />
+              <MetricRow label="Life Group Membership (as of period)" actual={commas(metrics.total.lifeGroupMembership.actual)} target={null} />
+              {monthlySeries && (
+                <PyaBarChart
+                  pya={monthlySeries.lifeGroupMembership.pya}
+                  months={monthlySeries.lifeGroupMembership.months}
+                  color="var(--accent)"
+                  valueFormatter={commas}
+                />
+              )}
             </ReportSection>
+
+            {monthlySeriesLoading && (
+              <div className="caption" style={{ marginBottom: 12 }}>
+                Loading monthly trend charts...
+              </div>
+            )}
+
+            <div style={{ marginBottom: 18 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>By Area</h2>
+              <div className="card" style={{ padding: 8, overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 680 }}>
+                  <thead>
+                    <tr style={{ background: 'var(--surface-muted)' }}>
+                      {['Area', 'Membership', 'Attendance', 'First Timers', 'Total Giving'].map((h) => (
+                        <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 12, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.byArea.map((a) => (
+                      <tr key={a.areaName} style={{ borderTop: '1px solid var(--line)' }}>
+                        <td style={{ padding: '8px 12px', fontWeight: 700, fontSize: 13 }}>{a.areaName}</td>
+                        <td style={{ padding: '8px 12px', fontSize: 13 }}>{commas(a.membership.actual)}</td>
+                        <td style={{ padding: '8px 12px', fontSize: 13 }}>{a.attendance.actual.toFixed(0)}</td>
+                        <td style={{ padding: '8px 12px', fontSize: 13 }}>{commas(a.firstTimers.actual)}</td>
+                        <td style={{ padding: '8px 12px', fontSize: 13 }}>{peso(a.totalGiving.actual)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
             {selected?.months.some((m) => UNREPORTED_MONTHS.has(m)) && (
               <div className="caption" style={{ marginTop: 4 }}>
