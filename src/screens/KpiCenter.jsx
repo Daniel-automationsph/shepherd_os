@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
-import { commas, createKpiTarget } from '../data/api'
+import AchievementBar from '../components/AchievementBar'
+import { commas, peso, createKpiTarget } from '../data/api'
 import { useAppData } from '../context/DataContext'
 
 export default function KpiCenter() {
@@ -57,19 +58,19 @@ export default function KpiCenter() {
 }
 
 function KpiCard({ kpi }) {
+  const formatter = kpi.unit === '₱' ? peso : kpi.unit === '%' ? (v) => `${Math.round(v)}%` : commas
+
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1, fontWeight: 700, fontSize: 14 }}>{kpi.name}</div>
         <StatusBadge status={kpi.status} compact />
       </div>
-      <div style={{ fontSize: 26, fontWeight: 800, marginTop: 10 }}>{kpi.achievementPct.toFixed(1)}%</div>
-      <div className="body-muted" style={{ marginTop: 4 }}>
-        {kpi.unit === '₱' ? '₱' : ''}
-        {commas(kpi.actual)} of {kpi.unit === '₱' ? '₱' : ''}
-        {commas(kpi.target)}
-        {kpi.unit === '%' ? '%' : ''}
+
+      <div style={{ marginTop: 14 }}>
+        <AchievementBar label="" target={kpi.target} actual={kpi.actual} formatter={formatter} />
       </div>
+
       <div style={{ flex: 1 }} />
       <hr className="divider" style={{ margin: '16px 0 10px' }} />
       <div style={{ display: 'flex' }}>
