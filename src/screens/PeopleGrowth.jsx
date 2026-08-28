@@ -4,6 +4,7 @@ import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
+import DonutChart from '../components/DonutChart'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -52,9 +53,27 @@ export default function PeopleGrowth() {
 
       {/* --- Category 2 --- */}
       <SectionBlock title="Category 2" subtitle="SSAM + SSAM/LGAM">
-        <PyaGrowth pya={activeMembersPya} actual={activeMembers} formatter={commas} />
-        <div className="caption" style={{ marginTop: 10 }}>
-          {commas(inactiveMembers)} in Category 1 but not Category 2
+        <div className="two-col-reverse">
+          <div>
+            <PyaGrowth pya={activeMembersPya} actual={activeMembers} formatter={commas} />
+            <div className="caption" style={{ marginTop: 10 }}>
+              {commas(inactiveMembers)} in Category 1 but not Category 2
+            </div>
+          </div>
+          <div>
+            <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
+              Category 1 Composition
+            </div>
+            <DonutChart
+              segments={[
+                { label: 'In Category 2', value: activeMembers, color: '#2f5233' },
+                { label: 'Not in Category 2', value: inactiveMembers, color: '#c98a2c' },
+              ]}
+              centerValue={commas(totalMembers)}
+              centerLabel="Total"
+              height={170}
+            />
+          </div>
         </div>
       </SectionBlock>
 
