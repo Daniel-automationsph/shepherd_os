@@ -83,22 +83,22 @@ export default function PeriodSelector() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="label" style={{ marginBottom: 6 }}>
-              Granularity
-            </div>
-            <select
-              value={localGranularity}
-              onChange={(e) => handleLocalGranularityChange(e.target.value)}
-              style={selectStyle}
-            >
-              {granularities.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
+            {granularities.length > 1 && (
+              <>
+                <div className="label" style={{ marginBottom: 6 }}>
+                  Granularity
+                </div>
+                <select value={localGranularity} onChange={(e) => handleLocalGranularityChange(e.target.value)} style={selectStyle}>
+                  {granularities.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
 
-            <div className="label" style={{ margin: '14px 0 6px' }}>
+            <div className="label" style={{ margin: granularities.length > 1 ? '14px 0 6px' : '0 0 6px' }}>
               Period
             </div>
             <select value={localKey} onChange={(e) => setLocalKey(e.target.value)} style={selectStyle}>
