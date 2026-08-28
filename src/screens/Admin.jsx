@@ -863,17 +863,35 @@ function BarangaysSection() {
                       fontWeight: 700,
                       padding: '3px 8px',
                       borderRadius: 999,
-                      color: b.isMainChurch ? '#1d5fa8' : b.extensionChurch ? 'var(--accent)' : b.reached ? 'var(--status-on-target)' : 'var(--status-critical)',
+                      color: b.isMainChurch
+                        ? '#1d5fa8'
+                        : b.extensionChurch
+                          ? 'var(--accent)'
+                          : b.reached && b.active === false
+                            ? '#5c6873'
+                            : b.reached
+                              ? 'var(--status-on-target)'
+                              : 'var(--status-critical)',
                       background: b.isMainChurch
                         ? '#dce9f7'
                         : b.extensionChurch
                           ? 'var(--accent-soft)'
-                          : b.reached
-                            ? 'var(--status-on-target-bg)'
-                            : 'var(--status-critical-bg)',
+                          : b.reached && b.active === false
+                            ? '#e4e8eb'
+                            : b.reached
+                              ? 'var(--status-on-target-bg)'
+                              : 'var(--status-critical-bg)',
                     }}
                   >
-                    {b.isMainChurch ? 'Main Church' : b.extensionChurch ? 'Extension Church' : b.reached ? 'Reached' : 'Not Reached'}
+                    {b.isMainChurch
+                      ? 'Main Church'
+                      : b.extensionChurch
+                        ? 'Extension Church'
+                        : b.reached && b.active === false
+                          ? 'Reached (Inactive)'
+                          : b.reached
+                            ? 'Reached (Active)'
+                            : 'Not Reached'}
                   </span>
                 </td>
                 <td style={{ padding: '10px 14px', fontSize: 13.5 }}>{b.reached ? b.peopleReached : '—'}</td>
@@ -915,6 +933,7 @@ function BarangaySheet({ barangay, onClose, onSaved }) {
     reached: barangay.reached,
     extensionChurch: barangay.extensionChurch,
     isMainChurch: barangay.isMainChurch,
+    active: barangay.active,
     peopleReached: barangay.peopleReached,
     firstTimers: barangay.firstTimers,
     lifeGroups: barangay.lifeGroups,
@@ -979,6 +998,23 @@ function BarangaySheet({ barangay, onClose, onSaved }) {
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
             <input type="checkbox" checked={form.extensionChurch} onChange={setExtensionChurch} />
             Extension Church
+          </label>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 14,
+              opacity: form.reached ? 1 : 0.4,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={form.active}
+              disabled={!form.reached}
+              onChange={setChecked('active')}
+            />
+            Active {!form.reached && <span className="caption">(only applies when Reached)</span>}
           </label>
         </div>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
