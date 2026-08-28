@@ -1,6 +1,7 @@
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
+import PyaGrowth from '../components/PyaGrowth'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
 
@@ -8,9 +9,10 @@ export default function PeopleGrowth() {
   const { data } = useAppData()
   const {
     totalMembers,
+    totalMembersPya,
     activeMembers,
+    activeMembersPya,
     inactiveMembers,
-    membershipGrowthPct,
     attendanceKpi,
     firstTimersKpi,
     firstTimerFunnel,
@@ -39,17 +41,14 @@ export default function PeopleGrowth() {
 
       {/* --- Category 1 --- */}
       <SectionBlock title="Category 1" subtitle="SSAM + LGAM + SSAM/LGAM">
-        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-          <Fact label="Total Membership" value={commas(totalMembers)} />
-          <Fact label="Growth" value={`+${membershipGrowthPct}%`} color="var(--status-on-target)" />
-        </div>
+        <PyaGrowth pya={totalMembersPya} actual={totalMembers} formatter={commas} />
       </SectionBlock>
 
       {/* --- Category 2 --- */}
       <SectionBlock title="Category 2" subtitle="SSAM + SSAM/LGAM">
-        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-          <Fact label="Total Membership" value={commas(activeMembers)} />
-          <Fact label="Not in Category 2" value={commas(inactiveMembers)} />
+        <PyaGrowth pya={activeMembersPya} actual={activeMembers} formatter={commas} />
+        <div className="caption" style={{ marginTop: 10 }}>
+          {commas(inactiveMembers)} in Category 1 but not Category 2
         </div>
       </SectionBlock>
 
@@ -59,10 +58,8 @@ export default function PeopleGrowth() {
           <div style={{ flex: 1 }} />
           <StatusBadge status={attendanceKpi.status} />
         </div>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 10 }}>
-          <Fact label="Average" value={attendanceKpi.actual.toFixed(0)} />
-          <Fact label="Target" value={attendanceKpi.target.toFixed(0)} />
-          <Fact label="Achievement" value={`${attendanceKpi.achievementPct.toFixed(1)}%`} />
+        <div style={{ marginTop: 10 }}>
+          <PyaGrowth pya={attendanceKpi.target} actual={attendanceKpi.actual} formatter={(v) => v.toFixed(0)} />
         </div>
         <div style={{ marginTop: 14 }}>
           <TrendChart points={attendanceKpi.trend} color="var(--primary)" />
@@ -75,10 +72,8 @@ export default function PeopleGrowth() {
           <div style={{ flex: 1 }} />
           <StatusBadge status={firstTimersKpi.status} />
         </div>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 10, marginBottom: 18 }}>
-          <Fact label="This Period" value={commas(firstTimersKpi.actual)} />
-          <Fact label="Target" value={commas(firstTimersKpi.target)} />
-          <Fact label="Achievement" value={`${firstTimersKpi.achievementPct.toFixed(1)}%`} />
+        <div style={{ marginTop: 10, marginBottom: 18 }}>
+          <PyaGrowth pya={firstTimersKpi.target} actual={firstTimersKpi.actual} formatter={commas} />
         </div>
 
         <div className="body-muted" style={{ marginBottom: 12 }}>
