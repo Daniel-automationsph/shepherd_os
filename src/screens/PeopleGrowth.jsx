@@ -109,8 +109,8 @@ export default function PeopleGrowth() {
                         fontWeight: 700,
                         padding: '2px 7px',
                         borderRadius: 999,
-                        color: a.isMainChurch ? '#0a3d66' : '#2f6690',
-                        background: a.isMainChurch ? '#dce9f5' : '#e6eef5',
+                        color: a.isMainChurch ? '#00698c' : '#256e42',
+                        background: a.isMainChurch ? '#e0f7ff' : '#e8f8ee',
                       }}
                     >
                       {a.isMainChurch ? 'MAIN CHURCH' : 'EXTENSION CHURCH'}
