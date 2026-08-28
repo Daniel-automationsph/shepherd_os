@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { GRANULARITIES, optionsFor, defaultMonthlyKey } from '../data/periods'
+import { GRANULARITIES, optionsFor, ANNUAL } from '../data/periods'
 import { fetchPeriodMetrics, fetchMonthlySeries } from '../data/periodApi'
 
 const PeriodContext = createContext(null)
 
 export function PeriodProvider({ children }) {
-  const [granularity, setGranularityState] = useState('Monthly')
-  const [selectedKey, setSelectedKey] = useState(defaultMonthlyKey())
+  const [granularity, setGranularityState] = useState('Annual')
+  const [selectedKey, setSelectedKey] = useState(ANNUAL.key)
   const [metrics, setMetrics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
