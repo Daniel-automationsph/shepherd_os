@@ -130,13 +130,18 @@ export default function BarangayMap({
     // isn't reached at all has no active/inactive distinction to make.
     const inactive = reached && b?.active === false
 
-    const fillColor = mainChurch ? '#1d5fa8' : extension ? '#c98a2c' : inactive ? '#8a97a3' : reached ? '#2f7d4f' : '#d94f36'
-    const borderColor = mainChurch ? '#123f70' : extension ? '#8a5f1c' : inactive ? '#5c6873' : reached ? '#1f5c37' : '#8f3220'
+    // Single-hue sequential gradient (strongest → palest), not 5 unrelated
+    // colors — the eye reads darker/more saturated as "more established/
+    // significant" and pale as "not yet developed," so the color itself
+    // communicates the hierarchy (Main Church → ... → Not Reached)
+    // without needing to read the legend first.
+    const fillColor = mainChurch ? '#0a3d66' : extension ? '#2f6690' : inactive ? '#a3c1d9' : reached ? '#6a97ba' : '#e0ecf5'
+    const borderColor = mainChurch ? '#072844' : extension ? '#204a68' : inactive ? '#7a97ab' : reached ? '#4b6f8a' : '#b8cddc'
 
     return {
       fillColor,
-      fillOpacity: selected ? 0.85 : mainChurch ? 0.75 : extension ? 0.72 : inactive ? 0.55 : reached ? 0.65 : 0.6,
-      color: selected ? '#1e2a22' : borderColor,
+      fillOpacity: selected ? 0.9 : mainChurch ? 0.85 : extension ? 0.78 : inactive ? 0.65 : reached ? 0.72 : 0.55,
+      color: selected ? '#04203a' : borderColor,
       weight: selected ? 3.5 : 1.8,
     }
   }
@@ -293,15 +298,16 @@ export default function BarangayMap({
                     width: 7,
                     height: 7,
                     borderRadius: '50%',
+                    border: '1px solid rgba(0,0,0,0.15)',
                     background: b.isMainChurch
-                      ? '#1d5fa8'
+                      ? '#0a3d66'
                       : b.extensionChurch
-                        ? '#c98a2c'
+                        ? '#2f6690'
                         : b.reached && b.active === false
-                          ? '#8a97a3'
+                          ? '#a3c1d9'
                           : b.reached
-                            ? '#2f7d4f'
-                            : '#d94f36',
+                            ? '#6a97ba'
+                            : '#e0ecf5',
                     flexShrink: 0,
                   }}
                 />
@@ -325,15 +331,15 @@ export default function BarangayMap({
           fontSize: 11,
         }}
       >
-        <LegendRow color="#1d5fa8" label="Main Church" />
+        <LegendRow color="#0a3d66" label="Main Church" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#c98a2c" label="Extension Church" />
+        <LegendRow color="#2f6690" label="Extension Church" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#2f7d4f" label="Reached (Active)" />
+        <LegendRow color="#6a97ba" label="Reached (Active)" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#8a97a3" label="Reached (Inactive)" />
+        <LegendRow color="#a3c1d9" label="Reached (Inactive)" />
         <div style={{ height: 4 }} />
-        <LegendRow color="#d94f36" label="Not reached" />
+        <LegendRow color="#e0ecf5" label="Not reached" />
       </div>
     </div>
   )
@@ -398,7 +404,16 @@ function ZoomWatcher({ onZoomChange }) {
 function LegendRow({ color, label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'inline-block' }} />
+      <span
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: color,
+          border: '1px solid rgba(0,0,0,0.18)',
+          display: 'inline-block',
+        }}
+      />
       <span className="caption">{label}</span>
     </div>
   )
