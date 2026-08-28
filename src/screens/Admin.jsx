@@ -461,12 +461,21 @@ function LifeGroupSheet({ group, onClose, onSaved }) {
     leadersActual: group?.leadersActual ?? '',
     attendanceTarget: group?.attendanceTarget ?? '',
     attendanceActual: group?.attendanceActual ?? '',
+    men: group?.demographics?.men ?? { target: 0, actual: 0 },
+    women: group?.demographics?.women ?? { target: 0, actual: 0 },
+    youngAdult: group?.demographics?.youngAdult ?? { target: 0, actual: 0 },
+    kkb: group?.demographics?.kkb ?? { target: 0, actual: 0 },
+    children: group?.demographics?.children ?? { target: 0, actual: 0 },
+    hetero: group?.demographics?.hetero ?? { target: 0, actual: 0 },
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   function set(key) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+  }
+  function setDemo(demoKey, field) {
+    return (e) => setForm((f) => ({ ...f, [demoKey]: { ...f[demoKey], [field]: e.target.value } }))
   }
 
   async function handleSave() {
@@ -478,7 +487,17 @@ function LifeGroupSheet({ group, onClose, onSaved }) {
     setError(null)
     try {
       if (group) {
-        await updateLifeGroup(group.id, form)
+        await updateLifeGroup(group.id, {
+          ...form,
+          demographics: {
+            men: form.men,
+            women: form.women,
+            youngAdult: form.youngAdult,
+            kkb: form.kkb,
+            children: form.children,
+            hetero: form.hetero,
+          },
+        })
       } else {
         await createLifeGroup(form)
       }
@@ -540,6 +559,40 @@ function LifeGroupSheet({ group, onClose, onSaved }) {
                 <Field label="LG Attendance — Actual">
                   <input type="number" style={sheetInputStyle} value={form.attendanceActual} onChange={set('attendanceActual')} />
                 </Field>
+              </div>
+            </div>
+
+            <div>
+              <div className="label" style={{ marginBottom: 8, marginTop: 4 }}>
+                By Demographic (Target / Actual)
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  ['men', 'Men'],
+                  ['women', 'Women'],
+                  ['youngAdult', 'Young Adult'],
+                  ['kkb', 'KKB'],
+                  ['children', 'Children'],
+                  ['hetero', 'Hetero'],
+                ].map(([key, label]) => (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 90, fontSize: 13 }}>{label}</div>
+                    <input
+                      type="number"
+                      style={{ ...sheetInputStyle, flex: 1 }}
+                      value={form[key].target}
+                      onChange={setDemo(key, 'target')}
+                      placeholder="Target"
+                    />
+                    <input
+                      type="number"
+                      style={{ ...sheetInputStyle, flex: 1 }}
+                      value={form[key].actual}
+                      onChange={setDemo(key, 'actual')}
+                      placeholder="Actual"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </>
