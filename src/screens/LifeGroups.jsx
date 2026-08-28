@@ -2,6 +2,7 @@ import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
+import RankingBarChart from '../components/RankingBarChart'
 import { KPI_STATUS, commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
 
@@ -65,6 +66,14 @@ export default function LifeGroups() {
           <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Headcount Trend</h2>
           <TrendChart points={lifeGroupHeadcountKpi.trend} color="var(--accent)" />
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>By Church — Achievement Ranking</h2>
+        <div className="body-muted" style={{ marginBottom: 12 }}>
+          Who is closest to (or past) their headcount target?
+        </div>
+        <RankingBarChart data={lifeGroups.map((g) => ({ label: g.name, value: g.achievementPct }))} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 24, marginBottom: 12 }}>
