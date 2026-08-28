@@ -70,6 +70,14 @@ function hydrateLifeGroup(row) {
     attendanceActual: Number(row.attendance_actual ?? 0),
     attendanceAchievementPct: attendancePct,
     attendanceStatus: statusFromAchievement(attendancePct),
+    demographics: {
+      men: { target: Number(row.men_target ?? 0), actual: Number(row.men_actual ?? 0) },
+      women: { target: Number(row.women_target ?? 0), actual: Number(row.women_actual ?? 0) },
+      youngAdult: { target: Number(row.young_adult_target ?? 0), actual: Number(row.young_adult_actual ?? 0) },
+      kkb: { target: Number(row.kkb_target ?? 0), actual: Number(row.kkb_actual ?? 0) },
+      children: { target: Number(row.children_target ?? 0), actual: Number(row.children_actual ?? 0) },
+      hetero: { target: Number(row.hetero_target ?? 0), actual: Number(row.hetero_actual ?? 0) },
+    },
   }
 }
 
@@ -431,7 +439,19 @@ export async function createLifeGroup({ name, district, barangay, leader, target
 /** Updates an existing life group by id. */
 export async function updateLifeGroup(
   id,
-  { name, district, barangay, leader, targetHeadcount, actualHeadcount, leadersTarget, leadersActual, attendanceTarget, attendanceActual },
+  {
+    name,
+    district,
+    barangay,
+    leader,
+    targetHeadcount,
+    actualHeadcount,
+    leadersTarget,
+    leadersActual,
+    attendanceTarget,
+    attendanceActual,
+    demographics,
+  },
 ) {
   requireSupabase()
   const payload = {
@@ -446,6 +466,32 @@ export async function updateLifeGroup(
   if (leadersActual != null) payload.leaders_actual = Number(leadersActual)
   if (attendanceTarget != null) payload.attendance_target = Number(attendanceTarget)
   if (attendanceActual != null) payload.attendance_actual = Number(attendanceActual)
+  if (demographics) {
+    if (demographics.men) {
+      payload.men_target = Number(demographics.men.target) || 0
+      payload.men_actual = Number(demographics.men.actual) || 0
+    }
+    if (demographics.women) {
+      payload.women_target = Number(demographics.women.target) || 0
+      payload.women_actual = Number(demographics.women.actual) || 0
+    }
+    if (demographics.youngAdult) {
+      payload.young_adult_target = Number(demographics.youngAdult.target) || 0
+      payload.young_adult_actual = Number(demographics.youngAdult.actual) || 0
+    }
+    if (demographics.kkb) {
+      payload.kkb_target = Number(demographics.kkb.target) || 0
+      payload.kkb_actual = Number(demographics.kkb.actual) || 0
+    }
+    if (demographics.children) {
+      payload.children_target = Number(demographics.children.target) || 0
+      payload.children_actual = Number(demographics.children.actual) || 0
+    }
+    if (demographics.hetero) {
+      payload.hetero_target = Number(demographics.hetero.target) || 0
+      payload.hetero_actual = Number(demographics.hetero.actual) || 0
+    }
+  }
 
   const { error } = await supabase.from('life_groups').update(payload).eq('id', id)
   if (error) throw new Error(error.message)
