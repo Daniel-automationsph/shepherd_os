@@ -4,6 +4,7 @@ export default function AchievementBar({ label, target, actual, formatter = (v) 
   const pct = target === 0 ? 0 : actual / target
   const status = statusFromAchievement(pct * 100)
   const meta = STATUS_META[status]
+  const achieved = pct >= 1
 
   return (
     <div>
@@ -23,8 +24,13 @@ export default function AchievementBar({ label, target, actual, formatter = (v) 
           }}
         />
       </div>
-      <div className="caption" style={{ marginTop: 4 }}>
-        {(pct * 100).toFixed(1)}% achievement
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        <span className="caption">{(pct * 100).toFixed(1)}% achievement</span>
+        {achieved && (
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--status-on-target)' }}>
+            · Target achieved ✓
+          </span>
+        )}
       </div>
     </div>
   )
