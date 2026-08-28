@@ -234,7 +234,7 @@ function AreaPeopleSection() {
                     style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      color: a.isMainChurch ? '#0a3d66' : '#2f6690',
+                      color: a.isMainChurch ? '#00698c' : '#256e42',
                     }}
                   >
                     {a.isMainChurch ? 'Main Church' : 'Extension Church'}
@@ -714,7 +714,7 @@ function AreaFinancialSection() {
               <tr key={a.id} style={{ borderTop: '1px solid var(--line)' }}>
                 <td style={{ padding: '10px 14px' }}>
                   <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.areaName}</div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: a.isMainChurch ? '#0a3d66' : '#2f6690' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: a.isMainChurch ? '#00698c' : '#256e42' }}>
                     {a.isMainChurch ? 'Main Church' : 'Extension Church'}
                   </span>
                 </td>
@@ -864,23 +864,23 @@ function BarangaysSection() {
                       padding: '3px 8px',
                       borderRadius: 999,
                       color: b.isMainChurch
-                        ? '#072844'
+                        ? '#00698c'
                         : b.extensionChurch
-                          ? '#204a68'
+                          ? '#256e42'
                           : b.reached && b.active === false
-                            ? '#5c7a94'
+                            ? '#867a59'
                             : b.reached
-                              ? '#3f6d8f'
-                              : '#8095a8',
+                              ? '#7f5833'
+                              : '#797976',
                       background: b.isMainChurch
-                        ? '#dce9f5'
+                        ? '#e0f7ff'
                         : b.extensionChurch
-                          ? '#e6eef5'
+                          ? '#e8f8ee'
                           : b.reached && b.active === false
-                            ? '#eef3f7'
+                            ? '#fdfbf3'
                             : b.reached
-                              ? '#e3ecf3'
-                              : '#f2f6f9',
+                              ? '#fcf3eb'
+                              : '#fafafa',
                     }}
                   >
                     {b.isMainChurch
