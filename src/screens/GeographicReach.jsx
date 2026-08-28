@@ -53,23 +53,23 @@ export default function GeographicReach() {
                     padding: '4px 10px',
                     borderRadius: 999,
                     color: selected.isMainChurch
-                      ? '#1d5fa8'
+                      ? '#072844'
                       : selected.extensionChurch
-                        ? 'var(--accent)'
+                        ? '#204a68'
                         : selected.reached && selected.active === false
-                          ? '#5c6873'
+                          ? '#5c7a94'
                           : selected.reached
-                            ? 'var(--status-on-target)'
-                            : 'var(--status-critical)',
+                            ? '#3f6d8f'
+                            : '#8095a8',
                     background: selected.isMainChurch
-                      ? '#dce9f7'
+                      ? '#dce9f5'
                       : selected.extensionChurch
-                        ? 'var(--accent-soft)'
+                        ? '#e6eef5'
                         : selected.reached && selected.active === false
-                          ? '#e4e8eb'
+                          ? '#eef3f7'
                           : selected.reached
-                            ? 'var(--status-on-target-bg)'
-                            : 'var(--status-critical-bg)',
+                            ? '#e3ecf3'
+                            : '#f2f6f9',
                   }}
                 >
                   {selected.isMainChurch
@@ -139,15 +139,16 @@ export default function GeographicReach() {
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
+                  border: '1px solid rgba(0,0,0,0.15)',
                   background: b.isMainChurch
-                    ? '#1d5fa8'
+                    ? '#0a3d66'
                     : b.extensionChurch
-                      ? 'var(--accent)'
+                      ? '#2f6690'
                       : b.reached && b.active === false
-                        ? '#8a97a3'
+                        ? '#a3c1d9'
                         : b.reached
-                          ? 'var(--status-on-target)'
-                          : 'var(--status-critical)',
+                          ? '#6a97ba'
+                          : '#e0ecf5',
                   flexShrink: 0,
                 }}
               />
@@ -159,8 +160,8 @@ export default function GeographicReach() {
                       marginLeft: 8,
                       fontSize: 10,
                       fontWeight: 700,
-                      color: '#1d5fa8',
-                      background: '#dce9f7',
+                      color: '#072844',
+                      background: '#dce9f5',
                       padding: '2px 6px',
                       borderRadius: 999,
                     }}
@@ -174,8 +175,8 @@ export default function GeographicReach() {
                       marginLeft: 8,
                       fontSize: 10,
                       fontWeight: 700,
-                      color: 'var(--accent)',
-                      background: 'var(--accent-soft)',
+                      color: '#204a68',
+                      background: '#e6eef5',
                       padding: '2px 6px',
                       borderRadius: 999,
                     }}
@@ -189,8 +190,8 @@ export default function GeographicReach() {
                       marginLeft: 8,
                       fontSize: 10,
                       fontWeight: 700,
-                      color: '#5c6873',
-                      background: '#e4e8eb',
+                      color: '#5c7a94',
+                      background: '#eef3f7',
                       padding: '2px 6px',
                       borderRadius: 999,
                     }}
