@@ -30,7 +30,7 @@ export default function LifeGroups() {
             {lifeGroupHeadcountKpi.actual} / {lifeGroupHeadcountKpi.target}
           </div>
           <div className="body-muted">
-            {lifeGroupHeadcountKpi.achievementPct.toFixed(1)}% achievement · {totalLifeGroups} groups
+            {lifeGroupHeadcountKpi.achievementPct.toFixed(1)}% achievement · {totalLifeGroups} churches
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
             <CountChip label="Healthy" count={healthy} color="var(--status-on-target)" />
@@ -67,10 +67,10 @@ export default function LifeGroups() {
       </div>
 
       <div className="card desktop-only" style={{ padding: 8, overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 780 }}>
           <thead>
             <tr style={{ background: 'var(--surface-muted)' }}>
-              {['Group', 'Ministry Area', 'Barangay', 'Leader', 'Headcount', 'Achievement', 'Status', 'LG Leaders', 'LG Attendance'].map((h) => (
+              {['Church', 'Ministry Area', 'Barangay', 'Leader', 'Headcount', 'Achievement', 'Status', 'LG Leaders', 'LG Attendance'].map((h) => (
                 <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
                   {h}
                 </th>
@@ -103,8 +103,6 @@ export default function LifeGroups() {
         </table>
       </div>
 
-      {/* Phone view: a table this wide only works via horizontal scroll,
-          which is awkward on a touchscreen — cards read much better. */}
       <div className="mobile-only">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtered.map((g) => (
