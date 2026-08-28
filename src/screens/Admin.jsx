@@ -234,7 +234,7 @@ function AreaPeopleSection() {
                     style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)',
+                      color: a.isMainChurch ? '#0a3d66' : '#2f6690',
                     }}
                   >
                     {a.isMainChurch ? 'Main Church' : 'Extension Church'}
@@ -714,7 +714,7 @@ function AreaFinancialSection() {
               <tr key={a.id} style={{ borderTop: '1px solid var(--line)' }}>
                 <td style={{ padding: '10px 14px' }}>
                   <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.areaName}</div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: a.isMainChurch ? '#1d5fa8' : 'var(--accent)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: a.isMainChurch ? '#0a3d66' : '#2f6690' }}>
                     {a.isMainChurch ? 'Main Church' : 'Extension Church'}
                   </span>
                 </td>
@@ -864,23 +864,23 @@ function BarangaysSection() {
                       padding: '3px 8px',
                       borderRadius: 999,
                       color: b.isMainChurch
-                        ? '#1d5fa8'
+                        ? '#072844'
                         : b.extensionChurch
-                          ? 'var(--accent)'
+                          ? '#204a68'
                           : b.reached && b.active === false
-                            ? '#5c6873'
+                            ? '#5c7a94'
                             : b.reached
-                              ? 'var(--status-on-target)'
-                              : 'var(--status-critical)',
+                              ? '#3f6d8f'
+                              : '#8095a8',
                       background: b.isMainChurch
-                        ? '#dce9f7'
+                        ? '#dce9f5'
                         : b.extensionChurch
-                          ? 'var(--accent-soft)'
+                          ? '#e6eef5'
                           : b.reached && b.active === false
-                            ? '#e4e8eb'
+                            ? '#eef3f7'
                             : b.reached
-                              ? 'var(--status-on-target-bg)'
-                              : 'var(--status-critical-bg)',
+                              ? '#e3ecf3'
+                              : '#f2f6f9',
                     }}
                   >
                     {b.isMainChurch
