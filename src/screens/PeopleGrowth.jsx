@@ -4,7 +4,7 @@ import StatusBadge from '../components/StatusBadge'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
 import ParentSubsetPanel from '../components/ParentSubsetPanel'
-import MonthlyComparisonChart from '../components/MonthlyComparisonChart'
+import TargetVsActualBarChart from '../components/TargetVsActualBarChart'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -87,28 +87,15 @@ export default function PeopleGrowth() {
         </div>
 
         <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — Category 2 vs Attendance (dashed line is Attendance's PYA)
+          Monthly Trend — Target Missed / Target Gained vs the real monthly total
         </div>
-        <MonthlyComparisonChart
-          months={(monthlySeries?.total?.attendance?.months || []).map((m, i) => {
-            const cat2Month = monthlySeries?.total?.activeMembership?.months?.[i]
-            return {
-              label: m.label,
-              attendance: m.unreported ? null : m.value,
-              category2: cat2Month?.unreported ? null : cat2Month?.value,
-              pyaLine: monthlySeries?.total?.attendance?.pya || 0,
-            }
-          })}
-          seriesAKey="category2"
-          seriesALabel="Category 2"
-          seriesAColor="#e07a3d"
-          seriesBKey="attendance"
-          seriesBLabel="Attendance"
-          seriesBColor="#6b46c1"
-          valueFormatter={(v) => commas(Math.round(v))}
+        <TargetVsActualBarChart
+          months={monthlySeries?.total?.attendance?.months || []}
+          target={monthlySeries?.total?.attendance?.pya || 0}
+          valueFormatter={(v) => v.toFixed(0)}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          Category 2 has no PYA line here — it's shown as an actual-only reference alongside Attendance's real trend and benchmark.
+          Target is Attendance's own PYA — Category 2 isn&apos;t part of this chart, since they measure different things (a weekly headcount vs. total distinct members).
         </div>
       </SectionBlock>
 
