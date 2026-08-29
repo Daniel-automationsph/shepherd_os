@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
-import TrendChart from '../components/TrendChart'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
 import ParentSubsetPanel from '../components/ParentSubsetPanel'
+import GroupedPyaBarChart from '../components/GroupedPyaBarChart'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -63,17 +63,33 @@ export default function PeopleGrowth() {
         />
       </SectionBlock>
 
-      {/* --- Sunday Service Attendance --- */}
-      <SectionBlock title="Sunday Service Attendance">
-        <div style={{ display: 'flex' }}>
-          <div style={{ flex: 1 }} />
-          <StatusBadge status={attendanceKpi.status} />
+      {/* --- Sunday Service Attendance vs Category 2 --- */}
+      <SectionBlock title="Sunday Service Attendance" subtitle="Compared against Category 2 — both shown against their own PYA benchmark">
+        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 16 }}>
+          <div className="card" style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex' }}>
+              <div className="label" style={{ flex: 1 }}>
+                Sunday Service Attendance
+              </div>
+              <StatusBadge status={attendanceKpi.status} compact />
+            </div>
+            <PyaGrowth pya={attendanceKpi.target} actual={attendanceKpi.actual} formatter={(v) => v.toFixed(0)} />
+          </div>
+          <div className="card" style={{ minWidth: 0 }}>
+            <div className="label">Category 2 ( SSAM+ SSAM/LGAM)</div>
+            <PyaGrowth pya={activeMembersPya} actual={activeMembers} formatter={commas} />
+          </div>
         </div>
-        <div style={{ marginTop: 10 }}>
-          <PyaGrowth pya={attendanceKpi.target} actual={attendanceKpi.actual} formatter={(v) => v.toFixed(0)} />
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <TrendChart points={attendanceKpi.trend} color="var(--primary)" />
+
+        <GroupedPyaBarChart
+          metrics={[
+            { label: 'Attendance', actual: attendanceKpi.actual, pya: attendanceKpi.target, color: '#6b46c1' },
+            { label: 'Category 2', actual: activeMembers, pya: activeMembersPya, color: '#e07a3d' },
+          ]}
+          formatter={(v) => commas(Math.round(v))}
+        />
+        <div className="caption" style={{ marginTop: 8 }}>
+          These are different kinds of numbers (a weekly headcount vs. total distinct members) — shown together to compare pace against each one's own PYA, not to imply they should be equal.
         </div>
       </SectionBlock>
 
