@@ -1,4 +1,4 @@
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { ComposedChart, Bar, Line, LabelList, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 /**
  * Month-by-month grouped bar comparison of two metrics — e.g. Category 2
@@ -39,8 +39,12 @@ export default function MonthlyComparisonChart({
           contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 8, fontSize: 12 }}
         />
         <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Bar dataKey={seriesAKey} name={seriesALabel} fill={seriesAColor} radius={[4, 4, 0, 0]} isAnimationActive={false} barSize={14} />
-        <Bar dataKey={seriesBKey} name={seriesBLabel} fill={seriesBColor} radius={[4, 4, 0, 0]} isAnimationActive={false} barSize={14} />
+        <Bar dataKey={seriesAKey} name={seriesALabel} fill={seriesAColor} radius={[4, 4, 0, 0]} isAnimationActive={false} barSize={20}>
+          <LabelList dataKey={seriesAKey} position="inside" formatter={(v) => (v == null ? '' : valueFormatter(v))} style={{ fontSize: 11, fontWeight: 700, fill: '#fff' }} />
+        </Bar>
+        <Bar dataKey={seriesBKey} name={seriesBLabel} fill={seriesBColor} radius={[4, 4, 0, 0]} isAnimationActive={false} barSize={20}>
+          <LabelList dataKey={seriesBKey} position="inside" formatter={(v) => (v == null ? '' : valueFormatter(v))} style={{ fontSize: 11, fontWeight: 700, fill: '#fff' }} />
+        </Bar>
         {/* PYA reference — a flat dashed line for seriesB only, since
             seriesA (Category 2, in the usual case) doesn't have its own
             PYA in this particular comparison. */}
