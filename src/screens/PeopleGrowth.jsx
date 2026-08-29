@@ -45,18 +45,18 @@ export default function PeopleGrowth() {
     <div className="scroll-page">
       <SectionHeader title="Membership" subtitle="Category 1, Category 2, Attendance, First Timers, and Workers" />
 
-      {/* --- Category 1 / Category 2 / Participation Rate --- */}
+      {/* --- Category 1 / Category 2 / Rate --- */}
       <SectionBlock title="Membership" subtitle="Category 2 is a subset of Category 1 — PYA is each category's own benchmark, not a third category">
         <ParentSubsetPanel
-          parentLabel="Category 1 (Total Members)"
+          parentLabel="Category 1 ( SSAM+LGAM+ SSAM/LGAM)"
           parentActual={totalMembers}
           parentPya={totalMembersPya}
           parentMonths={monthlySeries?.total?.membership?.months}
-          subsetLabel="Category 2 (Active / Participating)"
+          subsetLabel="Category 2 ( SSAM+ SSAM/LGAM)"
           subsetActual={activeMembers}
           subsetPya={activeMembersPya}
           subsetMonths={monthlySeries?.total?.activeMembership?.months}
-          rateLabel="Participation Rate"
+          rateLabel="Rate"
           formatter={commas}
           parentColor="#6b46c1"
           subsetColor="#e07a3d"
