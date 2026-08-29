@@ -1,7 +1,7 @@
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 /**
- * Bar chart: first bar is PYA (Previous Year Average, shown as a distinct
+ * Bar chart: first bar is PYA (Previous Year Accomplishment, shown as a distinct
  * reference bar), followed by one bar per month of the real monthly
  * series. The not-yet-reported month (if any) is shown in a lighter,
  * dashed-border style rather than a plain zero bar, so it doesn't read
