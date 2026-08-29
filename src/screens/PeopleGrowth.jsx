@@ -4,7 +4,7 @@ import StatusBadge from '../components/StatusBadge'
 import TrendChart from '../components/TrendChart'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
-import DonutChart from '../components/DonutChart'
+import ParentSubsetPanel from '../components/ParentSubsetPanel'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -19,7 +19,6 @@ export default function PeopleGrowth() {
     totalMembersPya,
     activeMembers,
     activeMembersPya,
-    inactiveMembers,
     attendanceKpi,
     firstTimersKpi,
     firstTimerFunnel,
@@ -46,35 +45,22 @@ export default function PeopleGrowth() {
     <div className="scroll-page">
       <SectionHeader title="Membership" subtitle="Category 1, Category 2, Attendance, First Timers, and Workers" />
 
-      {/* --- Category 1 --- */}
-      <SectionBlock title="Category 1" subtitle="SSAM + LGAM + SSAM/LGAM">
-        <PyaGrowth pya={totalMembersPya} actual={totalMembers} formatter={commas} />
-      </SectionBlock>
-
-      {/* --- Category 2 --- */}
-      <SectionBlock title="Category 2" subtitle="SSAM + SSAM/LGAM">
-        <div className="two-col-reverse">
-          <div>
-            <PyaGrowth pya={activeMembersPya} actual={activeMembers} formatter={commas} />
-            <div className="caption" style={{ marginTop: 10 }}>
-              {commas(inactiveMembers)} in Category 1 but not Category 2
-            </div>
-          </div>
-          <div>
-            <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
-              Category 1 Composition
-            </div>
-            <DonutChart
-              segments={[
-                { label: 'In Category 2', value: activeMembers, color: '#2f5233' },
-                { label: 'Not in Category 2', value: inactiveMembers, color: '#c98a2c' },
-              ]}
-              centerValue={commas(totalMembers)}
-              centerLabel="Total"
-              height={170}
-            />
-          </div>
-        </div>
+      {/* --- Category 1 / Category 2 / Participation Rate --- */}
+      <SectionBlock title="Membership" subtitle="Category 2 is a subset of Category 1 — PYA is each category's own benchmark, not a third category">
+        <ParentSubsetPanel
+          parentLabel="Category 1 (Total Members)"
+          parentActual={totalMembers}
+          parentPya={totalMembersPya}
+          parentMonths={monthlySeries?.total?.membership?.months}
+          subsetLabel="Category 2 (Active / Participating)"
+          subsetActual={activeMembers}
+          subsetPya={activeMembersPya}
+          subsetMonths={monthlySeries?.total?.activeMembership?.months}
+          rateLabel="Participation Rate"
+          formatter={commas}
+          parentColor="#2f5233"
+          subsetColor="#c98a2c"
+        />
       </SectionBlock>
 
       {/* --- Sunday Service Attendance --- */}
@@ -268,8 +254,6 @@ export default function PeopleGrowth() {
 
 function TrendsGrid({ series }) {
   const charts = [
-    ['membership', 'Category 1', commas],
-    ['activeMembership', 'Category 2', commas],
     ['attendance', 'Sunday Service Attendance', (v) => v.toFixed(0)],
     ['firstTimers', 'First Timers', commas],
     ['totalWorkers', 'Workers', commas],
