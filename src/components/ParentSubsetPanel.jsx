@@ -29,8 +29,8 @@ export default function ParentSubsetPanel({
   subsetMonths,
   rateLabel = 'Rate',
   formatter = (v) => Math.round(v).toString(),
-  parentColor = '#2f5233',
-  subsetColor = '#c98a2c',
+  parentColor = '#6b46c1',
+  subsetColor = '#e07a3d',
 }) {
   const parentGrowthPct = parentPya > 0 ? ((parentActual - parentPya) / parentPya) * 100 : null
   const subsetGrowthPct = subsetPya > 0 ? ((subsetActual - subsetPya) / subsetPya) * 100 : null
@@ -105,7 +105,7 @@ export default function ParentSubsetPanel({
 
       {chartData.length > 0 && (
         <ResponsiveContainer width="100%" height={260}>
-          <ComposedChart data={chartData} margin={{ top: 6, right: 10, bottom: 0, left: -20 }}>
+          <ComposedChart data={chartData} margin={{ top: 24, right: 10, bottom: 0, left: -20 }}>
             <defs>
               <linearGradient id="parentFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={parentColor} stopOpacity={0.45} />
