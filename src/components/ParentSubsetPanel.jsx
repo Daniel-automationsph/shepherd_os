@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 /**
  * Standardized "Parent → Subset → Rate" pattern for anywhere one metric
@@ -58,17 +58,30 @@ export default function ParentSubsetPanel({
 
   return (
     <div>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: 18 }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 18 }}>
         {cards.map((c) => (
-          <div className="card" key={c.label}>
-            <div className="label">{c.label}</div>
-            <div style={{ fontSize: 24, fontWeight: 800, marginTop: 6 }}>{c.value}</div>
+          <div className="card" key={c.label} style={{ minWidth: 0 }}>
+            <div className="label" style={{ overflowWrap: 'break-word' }}>
+              {c.label}
+            </div>
+            <div
+              style={{
+                fontSize: 'clamp(18px, 5vw, 24px)',
+                fontWeight: 800,
+                marginTop: 6,
+                overflowWrap: 'break-word',
+                wordBreak: 'break-word',
+              }}
+            >
+              {c.value}
+            </div>
             {c.growth != null && (
               <div
                 style={{
                   fontSize: 12,
                   fontWeight: 700,
                   marginTop: 4,
+                  overflowWrap: 'break-word',
                   color: c.growth >= 0 ? 'var(--status-on-target)' : 'var(--status-critical)',
                 }}
               >
@@ -82,8 +95,18 @@ export default function ParentSubsetPanel({
       </div>
 
       {chartData.length > 0 && (
-        <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={chartData} margin={{ top: 6, right: 10, bottom: 0, left: -20 }}>
+        <ResponsiveContainer width="100%" height={260}>
+          <ComposedChart data={chartData} margin={{ top: 6, right: 10, bottom: 0, left: -20 }}>
+            <defs>
+              <linearGradient id="parentFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={parentColor} stopOpacity={0.45} />
+                <stop offset="95%" stopColor={parentColor} stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="subsetFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={subsetColor} stopOpacity={0.55} />
+                <stop offset="95%" stopColor={subsetColor} stopOpacity={0.08} />
+              </linearGradient>
+            </defs>
             <CartesianGrid stroke="var(--line)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
             <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={formatter} width={44} />
@@ -92,31 +115,52 @@ export default function ParentSubsetPanel({
               contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 8, fontSize: 12 }}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="parentCurrent" name={parentLabel} stroke={parentColor} strokeWidth={2.5} dot={false} isAnimationActive={false} />
-            <Line type="monotone" dataKey="subsetCurrent" name={subsetLabel} stroke={subsetColor} strokeWidth={2.5} dot={false} isAnimationActive={false} />
+            {/* Current values: smooth filled areas — the main visual story */}
+            <Area
+              type="natural"
+              dataKey="parentCurrent"
+              name={parentLabel}
+              stroke={parentColor}
+              strokeWidth={2.5}
+              fill="url(#parentFill)"
+              dot={false}
+              isAnimationActive={false}
+            />
+            <Area
+              type="natural"
+              dataKey="subsetCurrent"
+              name={subsetLabel}
+              stroke={subsetColor}
+              strokeWidth={2.5}
+              fill="url(#subsetFill)"
+              dot={false}
+              isAnimationActive={false}
+            />
+            {/* PYA benchmarks: thin dashed lines, no fill — reference
+                context sitting on top of the areas, not competing with them */}
             <Line
-              type="monotone"
+              type="natural"
               dataKey="parentPyaLine"
               name={`${parentLabel} PYA`}
               stroke={parentColor}
-              strokeOpacity={0.35}
+              strokeOpacity={0.5}
               strokeWidth={1.25}
               strokeDasharray="5 4"
               dot={false}
               isAnimationActive={false}
             />
             <Line
-              type="monotone"
+              type="natural"
               dataKey="subsetPyaLine"
               name={`${subsetLabel} PYA`}
               stroke={subsetColor}
-              strokeOpacity={0.35}
+              strokeOpacity={0.5}
               strokeWidth={1.25}
               strokeDasharray="5 4"
               dot={false}
               isAnimationActive={false}
             />
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       )}
 
