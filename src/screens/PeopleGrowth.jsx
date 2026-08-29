@@ -4,7 +4,7 @@ import StatusBadge from '../components/StatusBadge'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
 import ParentSubsetPanel from '../components/ParentSubsetPanel'
-import GroupedPyaBarChart from '../components/GroupedPyaBarChart'
+import MonthlyComparisonChart from '../components/MonthlyComparisonChart'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -63,8 +63,8 @@ export default function PeopleGrowth() {
         />
       </SectionBlock>
 
-      {/* --- Sunday Service Attendance vs Category 2 --- */}
-      <SectionBlock title="Sunday Service Attendance" subtitle="Compared against Category 2 — both shown against their own PYA benchmark">
+      {/* --- Sunday Service Attendance (with PYA + monthly trend) vs Category 2 (actual only, for reference) --- */}
+      <SectionBlock title="Sunday Service Attendance" subtitle="Shown against its own PYA and real monthly trend — Category 2 included only as a simple reference figure">
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 16 }}>
           <div className="card" style={{ minWidth: 0 }}>
             <div style={{ display: 'flex' }}>
@@ -77,19 +77,38 @@ export default function PeopleGrowth() {
           </div>
           <div className="card" style={{ minWidth: 0 }}>
             <div className="label">Category 2 ( SSAM+ SSAM/LGAM)</div>
-            <PyaGrowth pya={activeMembersPya} actual={activeMembers} formatter={commas} />
+            <div className="stat-large" style={{ marginTop: 8 }}>
+              {commas(activeMembers)}
+            </div>
+            <div className="caption" style={{ marginTop: 4 }}>
+              Actual only — no PYA comparison here
+            </div>
           </div>
         </div>
 
-        <GroupedPyaBarChart
-          metrics={[
-            { label: 'Attendance', actual: attendanceKpi.actual, pya: attendanceKpi.target, color: '#6b46c1' },
-            { label: 'Category 2', actual: activeMembers, pya: activeMembersPya, color: '#e07a3d' },
-          ]}
-          formatter={(v) => commas(Math.round(v))}
+        <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
+          Monthly Trend — Category 2 vs Attendance (dashed line is Attendance's PYA)
+        </div>
+        <MonthlyComparisonChart
+          months={(monthlySeries?.total?.attendance?.months || []).map((m, i) => {
+            const cat2Month = monthlySeries?.total?.activeMembership?.months?.[i]
+            return {
+              label: m.label,
+              attendance: m.unreported ? null : m.value,
+              category2: cat2Month?.unreported ? null : cat2Month?.value,
+              pyaLine: monthlySeries?.total?.attendance?.pya || 0,
+            }
+          })}
+          seriesAKey="category2"
+          seriesALabel="Category 2"
+          seriesAColor="#e07a3d"
+          seriesBKey="attendance"
+          seriesBLabel="Attendance"
+          seriesBColor="#6b46c1"
+          valueFormatter={(v) => commas(Math.round(v))}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          These are different kinds of numbers (a weekly headcount vs. total distinct members) — shown together to compare pace against each one's own PYA, not to imply they should be equal.
+          Category 2 has no PYA line here — it's shown as an actual-only reference alongside Attendance's real trend and benchmark.
         </div>
       </SectionBlock>
 
