@@ -36,7 +36,7 @@ export default function Financial() {
         <div className="card">
           <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>By Category</h2>
           <div className="caption" style={{ marginBottom: 14 }}>
-            Bars compare Actual against PYA (Previous Year Average)
+            Bars compare Actual against PYA (Previous Year Accomplishment)
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {financialCategories.map((cat) => {
