@@ -48,13 +48,22 @@ export default function ParentSubsetPanel({
   // Build combined chart data — PYA is rendered as a flat dashed line
   // (same value repeated across every month) since it's a single
   // benchmark number, not its own monthly series.
-  const chartData = (parentMonths || []).map((m, i) => ({
-    label: m.label,
-    parentCurrent: m.value,
-    subsetCurrent: subsetMonths?.[i]?.value ?? null,
-    parentPyaLine: parentPya,
-    subsetPyaLine: subsetPya,
-  }))
+  //
+  // Unreported months (e.g. the current month, before it's been entered)
+  // are passed as `null` rather than their raw 0 value — Recharts breaks
+  // the line/area at a null point instead of drawing through it, so the
+  // chart honestly stops where real data ends rather than plunging to a
+  // misleading "cliff" at zero that would look like activity crashed.
+  const chartData = (parentMonths || []).map((m, i) => {
+    const subsetMonth = subsetMonths?.[i]
+    return {
+      label: m.label,
+      parentCurrent: m.unreported ? null : m.value,
+      subsetCurrent: subsetMonth == null || subsetMonth.unreported ? null : subsetMonth.value,
+      parentPyaLine: parentPya,
+      subsetPyaLine: subsetPya,
+    }
+  })
 
   return (
     <div>
@@ -162,6 +171,12 @@ export default function ParentSubsetPanel({
             />
           </ComposedChart>
         </ResponsiveContainer>
+      )}
+
+      {(parentMonths || []).some((m) => m.unreported) && (
+        <div className="caption" style={{ marginTop: 4 }}>
+          The most recent month isn&apos;t yet reported in the source data — the chart stops at the last real figure rather than showing a misleading drop to zero.
+        </div>
       )}
 
       <div className="caption" style={{ marginTop: 8 }}>
