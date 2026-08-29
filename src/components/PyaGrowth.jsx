@@ -11,7 +11,7 @@ export default function PyaGrowth({ pya, actual, formatter = (v) => v }) {
         <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3 }}>{formatter(actual)}</div>
       </div>
       <div>
-        <div className="label">PYA (Previous Year Average)</div>
+        <div className="label">PYA (Previous Year Accomplishment)</div>
         <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3 }}>{formatter(pya)}</div>
       </div>
       <div>
