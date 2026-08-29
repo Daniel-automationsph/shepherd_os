@@ -58,8 +58,8 @@ export default function PeopleGrowth() {
           subsetMonths={monthlySeries?.total?.activeMembership?.months}
           rateLabel="Participation Rate"
           formatter={commas}
-          parentColor="#2f5233"
-          subsetColor="#c98a2c"
+          parentColor="#6b46c1"
+          subsetColor="#e07a3d"
         />
       </SectionBlock>
 
