@@ -74,7 +74,7 @@ export default function OverlappingTargetBarChart({
         <Bar dataKey="background" name={backgroundLabel} fill={CATEGORY2_COLOR} barSize={34} radius={[3, 3, 0, 0]} isAnimationActive={false} />
         {/* Front bar (drawn second = on top) — narrower, colored blue for
             the PYA bar, green/red for real months by target status. */}
-        <Bar dataKey="front" name="Actual" barSize={34} radius={[3, 3, 0, 0]} isAnimationActive={false}>
+        <Bar dataKey="front" name="Actual" barSize={16} radius={[3, 3, 0, 0]} isAnimationActive={false}>
           {data.map((entry, i) => (
             <Cell key={i} fill={entry.isPyaBar ? PYA_COLOR : entry.passed ? TARGET_PASSED_COLOR : TARGET_MISSED_COLOR} />
           ))}
