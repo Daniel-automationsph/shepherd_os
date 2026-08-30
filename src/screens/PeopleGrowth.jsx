@@ -100,11 +100,12 @@ export default function PeopleGrowth() {
           })}
           backgroundKey="background"
           backgroundLabel="Category 2"
-          target={monthlySeries?.total?.attendance?.pya || 0}
+          target={(activeMembersPya || 0) * 0.6}
+          pyaBarLabel="SSA PYA"
           valueFormatter={(v) => commas(Math.round(v))}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          SSA target is {((monthlySeries?.total?.attendance?.pya || 0) / (activeMembersPya || 1) * 100).toFixed(0)}% of Category 2's own PYA (the real ratio from your data — not a fixed benchmark).
+          SSA Target is set at 60% of Category 2's PYA ({commas(activeMembersPya)}) — real figure: {commas(Math.round(activeMembersPya * 0.6))}.
         </div>
       </SectionBlock>
 
