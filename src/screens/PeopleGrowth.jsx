@@ -100,12 +100,12 @@ export default function PeopleGrowth() {
           })}
           backgroundKey="background"
           backgroundLabel="Category 2"
-          target={(activeMembersPya || 0) * 0.6}
+          target={(activeMembers || 0) * 0.6}
           pyaBarLabel="SSA PYA"
           valueFormatter={(v) => commas(Math.round(v))}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          SSA Target is set at 60% of Category 2's PYA ({commas(activeMembersPya)}) — real figure: {commas(Math.round(activeMembersPya * 0.6))}.
+          SSA Target is set at 60% of Category 2's Actual ({commas(activeMembers)}) — real figure: {commas(Math.round(activeMembers * 0.6))}.
         </div>
       </SectionBlock>
 
