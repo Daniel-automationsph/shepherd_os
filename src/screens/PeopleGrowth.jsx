@@ -4,7 +4,7 @@ import StatusBadge from '../components/StatusBadge'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
 import ParentSubsetPanel from '../components/ParentSubsetPanel'
-import MonthlyComparisonChart from '../components/MonthlyComparisonChart'
+import OverlappingTargetBarChart from '../components/OverlappingTargetBarChart'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -64,7 +64,7 @@ export default function PeopleGrowth() {
       </SectionBlock>
 
       {/* --- Sunday Service Attendance (with PYA + monthly trend) vs Category 2 (actual only, for reference) --- */}
-      <SectionBlock title="Sunday Service Attendance" subtitle="Shown against its own PYA and real monthly trend — Category 2 included only as a simple reference figure">
+      <SectionBlock title="Sunday Service Attendance" subtitle="Overlapping against Category 2, colored by whether that month passed its own target">
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 16 }}>
           <div className="card" style={{ minWidth: 0 }}>
             <div style={{ display: 'flex' }}>
@@ -87,28 +87,24 @@ export default function PeopleGrowth() {
         </div>
 
         <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — Category 2 vs Attendance (dashed line is Attendance's PYA)
+          Monthly Trend — Category 2 (background) vs Attendance (Target Passed / Target Missed)
         </div>
-        <MonthlyComparisonChart
+        <OverlappingTargetBarChart
           months={(monthlySeries?.total?.attendance?.months || []).map((m, i) => {
             const cat2Month = monthlySeries?.total?.activeMembership?.months?.[i]
             return {
               label: m.label,
-              attendance: m.unreported ? null : m.value,
-              category2: cat2Month?.unreported ? null : cat2Month?.value,
-              pyaLine: monthlySeries?.total?.attendance?.pya || 0,
+              front: m.unreported ? null : m.value,
+              background: cat2Month?.unreported ? null : cat2Month?.value,
             }
           })}
-          seriesAKey="category2"
-          seriesALabel="Category 2"
-          seriesAColor="#e07a3d"
-          seriesBKey="attendance"
-          seriesBLabel="Attendance"
-          seriesBColor="#6b46c1"
+          backgroundKey="background"
+          backgroundLabel="Category 2"
+          target={monthlySeries?.total?.attendance?.pya || 0}
           valueFormatter={(v) => commas(Math.round(v))}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          Category 2 has no PYA line here — it's shown as an actual-only reference alongside Attendance's real trend and benchmark.
+          SSA target is {((monthlySeries?.total?.attendance?.pya || 0) / (activeMembersPya || 1) * 100).toFixed(0)}% of Category 2's own PYA (the real ratio from your data — not a fixed benchmark).
         </div>
       </SectionBlock>
 
