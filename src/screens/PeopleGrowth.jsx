@@ -103,11 +103,12 @@ export default function PeopleGrowth() {
           backgroundKey="background"
           backgroundLabel="Category 2"
           target={(activeMembers || 0) * 0.6}
+          pyaValue={monthlySeries?.total?.attendance?.pya || 0}
           pyaBarLabel="SSA PYA"
           valueFormatter={(v) => commas(Math.round(v))}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          Category 2's background bar and target both use its current, live value ({commas(activeMembers)}) — editable in Admin Console, and this chart updates automatically when it changes.
+          The blue bar is Attendance's own real PYA ({commas(Math.round(monthlySeries?.total?.attendance?.pya || 0))}) — a different number from the pass/fail Target ({commas(Math.round(activeMembers * 0.6))}), which is set at 60% of Category 2's current Actual ({commas(activeMembers)}).
         </div>
       </SectionBlock>
 
