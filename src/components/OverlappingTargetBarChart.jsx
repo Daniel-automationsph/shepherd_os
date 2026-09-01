@@ -48,7 +48,7 @@ export default function OverlappingTargetBarChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} barGap={0} barCategoryGap="22%" margin={{ top: 24, right: 10, bottom: 0, left: -20 }}>
+      <BarChart data={data} barGap={0} barCategoryGap="22%" margin={{ top: 24, right: 10, bottom: 0, left: 12 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
         <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={valueFormatter} width={44} />
@@ -73,11 +73,14 @@ export default function OverlappingTargetBarChart({
           stroke="var(--ink-faint)"
           strokeDasharray="4 4"
           strokeWidth={1.25}
-          label={{ value: `Target: ${valueFormatter(target)}`, position: 'insideTopLeft', fontSize: 11, fill: 'var(--ink-muted)' }}
+          // Positioned on the right, away from the leading PYA bar — at
+          // 'insideTopLeft' this label sat right on top of the PYA bar's
+          // own "452" label, since both live at the same y-value.
+          label={{ value: `Target: ${valueFormatter(target)}`, position: 'right', fontSize: 11, fill: 'var(--ink-muted)' }}
         />
         {/* Bottom segment — SSA's real value, colored by target status
             (or blue for the leading PYA bar). Drawn first in the stack. */}
-        <Bar dataKey="front" name="Actual" stackId="ssaStack" barSize={34} radius={[0, 0, 0, 0]} isAnimationActive={false}>
+        <Bar dataKey="front" name="Actual" stackId="ssaStack" barSize={40} radius={[0, 0, 0, 0]} isAnimationActive={false}>
           {data.map((entry, i) => (
             <Cell key={i} fill={entry.isPyaBar ? PYA_COLOR : entry.passed ? TARGET_PASSED_COLOR : TARGET_MISSED_COLOR} />
           ))}
@@ -86,7 +89,7 @@ export default function OverlappingTargetBarChart({
         {/* Top segment — the rest of Category 2's height above SSA,
             stacked directly on top so the combined bar reaches Category
             2's real total. */}
-        <Bar dataKey="remainder" name="Category 2 (remainder)" stackId="ssaStack" fill={CATEGORY2_COLOR} barSize={34} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+        <Bar dataKey="remainder" name="Category 2 (remainder)" stackId="ssaStack" fill={CATEGORY2_COLOR} barSize={40} radius={[3, 3, 0, 0]} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -94,18 +97,19 @@ export default function OverlappingTargetBarChart({
 
 // The leading PYA bar gets a two-line label (value, then its name)
 // matching the reference design — every other bar just gets its single
-// formatted value.
+// formatted value. Font sizes are kept small enough to fit within a
+// 40px-wide bar without the container clipping the text.
 function renderBarLabel(props, row, valueFormatter, pyaBarLabel) {
   const { x, y, width } = props
   if (row.front == null) return null
   const cx = x + width / 2
   if (row.isPyaBar) {
     return (
-      <text x={cx} y={y + 26} textAnchor="middle" fontSize={13} fontWeight={700} fill="#fff">
+      <text x={cx} y={y + 24} textAnchor="middle" fontSize={12} fontWeight={700} fill="#fff">
         <tspan x={cx} dy="0">
           {valueFormatter(row.front)}
         </tspan>
-        <tspan x={cx} dy="16">
+        <tspan x={cx} dy="15">
           {pyaBarLabel}
         </tspan>
       </text>
