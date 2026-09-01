@@ -90,14 +90,16 @@ export default function PeopleGrowth() {
           Monthly Trend — Category 2 (background) vs Attendance (Target Passed / Target Missed)
         </div>
         <OverlappingTargetBarChart
-          months={(monthlySeries?.total?.attendance?.months || []).map((m, i) => {
-            const cat2Month = monthlySeries?.total?.activeMembership?.months?.[i]
-            return {
-              label: m.label,
-              front: m.unreported ? null : m.value,
-              background: cat2Month?.unreported ? null : cat2Month?.value,
-            }
-          })}
+          months={(monthlySeries?.total?.attendance?.months || []).map((m) => ({
+            label: m.label,
+            front: m.unreported ? null : m.value,
+            // Category 2's background bar uses the LIVE, Admin-editable
+            // value (same number every month) rather than the frozen
+            // historical import — if the church updates Category 2 in
+            // Admin Console later, this chart picks that up automatically
+            // instead of staying stuck on last year's imported figures.
+            background: m.unreported ? null : activeMembers,
+          }))}
           backgroundKey="background"
           backgroundLabel="Category 2"
           target={(activeMembers || 0) * 0.6}
@@ -105,7 +107,7 @@ export default function PeopleGrowth() {
           valueFormatter={(v) => commas(Math.round(v))}
         />
         <div className="caption" style={{ marginTop: 8 }}>
-          SSA Target is set at 60% of Category 2's Actual ({commas(activeMembers)}) — real figure: {commas(Math.round(activeMembers * 0.6))}.
+          Category 2's background bar and target both use its current, live value ({commas(activeMembers)}) — editable in Admin Console, and this chart updates automatically when it changes.
         </div>
       </SectionBlock>
 
