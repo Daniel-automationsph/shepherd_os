@@ -18,12 +18,19 @@ const TARGET_MISSED_COLOR = '#e14b3f'
  * portion clearly visible at the bottom in its own color. If SSA's value
  * exceeds Category 2's, there's no remainder — the whole bar is just the
  * colored SSA segment.
+ *
+ * IMPORTANT: `pyaValue` (SSA's own real historical PYA) and `target`
+ * (the pass/fail threshold, e.g. 60% of Category 2) are genuinely
+ * different numbers, not the same figure shown two ways — the leading
+ * blue bar shows `pyaValue`, while the dashed reference line and every
+ * month's green/red coloring are driven by `target`.
  */
 export default function OverlappingTargetBarChart({
   months,
   backgroundKey,
   backgroundLabel,
   target,
+  pyaValue,
   pyaBarLabel = 'SSA PYA',
   valueFormatter = (v) => Math.round(v).toString(),
   height = 300,
@@ -31,7 +38,7 @@ export default function OverlappingTargetBarChart({
   if (!months || months.length === 0) return null
 
   const data = [
-    { label: pyaBarLabel, front: target, remainder: 0, isPyaBar: true, passed: false },
+    { label: pyaBarLabel, front: pyaValue, remainder: 0, isPyaBar: true, passed: false },
     ...months.map((m) => {
       const front = m.front
       const bg = m.background
