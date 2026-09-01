@@ -80,10 +80,12 @@ export default function OverlappingTargetBarChart({
           stroke="var(--ink-faint)"
           strokeDasharray="4 4"
           strokeWidth={1.25}
-          // Positioned on the right, away from the leading PYA bar — at
-          // 'insideTopLeft' this label sat right on top of the PYA bar's
-          // own "452" label, since both live at the same y-value.
-          label={{ value: `Target: ${valueFormatter(target)}`, position: 'right', fontSize: 11, fill: 'var(--ink-muted)' }}
+          // Positioned INSIDE the plot area (not past its right edge) —
+          // 'right' rendered outside the chart's own bounds, which got
+          // clipped since there wasn't enough margin reserved for it.
+          // insideTopRight stays within the SVG's rendered area, so it
+          // can't be cut off regardless of container width.
+          label={{ value: `Target: ${valueFormatter(target)}`, position: 'insideTopRight', fontSize: 11, fill: 'var(--ink-muted)' }}
         />
         {/* Bottom segment — SSA's real value, colored by target status
             (or blue for the leading PYA bar). Drawn first in the stack. */}
@@ -102,23 +104,29 @@ export default function OverlappingTargetBarChart({
   )
 }
 
-// The leading PYA bar gets a two-line label (value, then its name)
-// matching the reference design — every other bar just gets its single
-// formatted value. Font sizes are kept small enough to fit within a
-// 40px-wide bar without the container clipping the text.
+// The leading PYA bar gets a multi-line label (value, then its name
+// split across 2 short lines) — every other bar just gets its single
+// formatted value. Font sizes and line breaks are kept tight enough to
+// fit within a 40px-wide bar without the text pushing past its edges.
 function renderBarLabel(props, row, valueFormatter, pyaBarLabel) {
   const { x, y, width } = props
   if (row.front == null) return null
   const cx = x + width / 2
   if (row.isPyaBar) {
+    // Break the label into short words so each line is narrow enough
+    // for a 40px bar — "SSA PYA" as one line was still wider than the
+    // bar itself even at a small font size.
+    const words = pyaBarLabel.split(' ')
     return (
-      <text x={cx} y={y + 24} textAnchor="middle" fontSize={12} fontWeight={700} fill="#fff">
-        <tspan x={cx} dy="0">
+      <text x={cx} y={y + 20} textAnchor="middle" fontSize={11} fontWeight={700} fill="#fff">
+        <tspan x={cx} dy="0" fontSize={13}>
           {valueFormatter(row.front)}
         </tspan>
-        <tspan x={cx} dy="15">
-          {pyaBarLabel}
-        </tspan>
+        {words.map((word, i) => (
+          <tspan key={i} x={cx} dy="13">
+            {word}
+          </tspan>
+        ))}
       </text>
     )
   }
