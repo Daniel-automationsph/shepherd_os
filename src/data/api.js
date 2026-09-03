@@ -628,3 +628,17 @@ export async function updateRolePermission(role, resource, field, value) {
     .eq('resource', resource)
   if (error) throw new Error(error.message)
 }
+
+/** Sends a message or assignment to a specific person — real-time delivered if they're online. */
+export async function sendNotification({ recipientId, senderId, type, title, body, link }) {
+  requireSupabase()
+  const { error } = await supabase.from('notifications').insert({
+    recipient_id: recipientId,
+    sender_id: senderId,
+    type,
+    title,
+    body: body || null,
+    link: link || null,
+  })
+  if (error) throw new Error(error.message)
+}
