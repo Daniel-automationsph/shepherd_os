@@ -271,7 +271,12 @@ export async function fetchAppData() {
 
     // Financial
     financialCategories,
-    financialKpi: byName['Overall Giving'],
+    // Falls back to the old name if add_number_of_tithers.sql (which
+    // renames this KPI) hasn't been run yet — avoids the whole app
+    // crashing on a missing KPI if the frontend deploys before the SQL
+    // migration does.
+    financialKpi: byName['Total Tithes and Offering'] || byName['Overall Giving'],
+    numberOfTithersKpi: byName['Number of Tithers'],
     areaFinancialStats,
 
     // Management Attention
