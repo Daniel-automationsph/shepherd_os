@@ -17,6 +17,7 @@ const METRIC_SPECS = {
   missionOffering: { section: 'finances', subsection: null, label: 'Mission Offering', mode: 'sum' },
   pledges: { section: 'finances', subsection: null, label: 'Pledges', mode: 'sum' },
   totalGiving: { section: 'finances', subsection: null, label: 'Total Tithes & Offering', mode: 'sum' },
+  numberOfTithers: { section: 'finances', subsection: null, label: 'No. of  Monthly Tithers', mode: 'average' },
   lifeGroupMembership: { section: 'life_group_ministry', subsection: 'lg_membership', label: 'Total No. Of Life Group Membership', mode: 'stock' },
 }
 
