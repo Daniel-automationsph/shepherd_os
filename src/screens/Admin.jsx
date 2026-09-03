@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import FormSheet, { Field, sheetInputStyle, SheetButton } from '../components/FormSheet'
 import { useAppData } from '../context/DataContext'
+import { useAuth } from '../context/AuthContext'
 import {
   KPI_STATUS,
   commas,
@@ -22,12 +23,37 @@ import {
   deleteKpi,
   updateAreaPeopleStats,
   updateAreaFinancialStats,
+  fetchAllProfiles,
+  updateProfileRole,
+  fetchAllRolePermissions,
+  updateRolePermission,
 } from '../data/api'
 
-const TABS = ['People', 'Area People', 'Life Groups', 'Financial', 'Area Financial', 'Barangays', 'Attention', 'KPIs']
+// Each Admin Console tab maps to a resource — shown only if the current
+// role has edit rights there. Users/Permissions are the two exceptions:
+// they're gated separately by role directly (admin/pastor_mis only),
+// not by the resource-permission system, since letting that be
+// self-editable would be a real way to accidentally lock everyone out.
+const ALL_TABS = [
+  ['People', 'membership'],
+  ['Area People', 'membership'],
+  ['Life Groups', 'life_groups'],
+  ['Financial', 'financial'],
+  ['Area Financial', 'financial'],
+  ['Barangays', 'outreach'],
+  ['Attention', 'attention'],
+  ['KPIs', 'kpis'],
+]
+const ADMIN_ONLY_ROLES = ['admin', 'pastor_mis']
 
 export default function Admin() {
-  const [tab, setTab] = useState('People')
+  const { role, canEdit } = useAuth()
+  const isAdminRole = ADMIN_ONLY_ROLES.includes(role)
+  const TABS = [
+    ...ALL_TABS.filter(([, resource]) => canEdit(resource)).map(([label]) => label),
+    ...(isAdminRole ? ['Users', 'Permissions'] : []),
+  ]
+  const [tab, setTab] = useState(TABS[0] || 'People')
 
   return (
     <div className="scroll-page">
@@ -58,6 +84,8 @@ export default function Admin() {
       {tab === 'Barangays' && <BarangaysSection />}
       {tab === 'Attention' && <AttentionSection />}
       {tab === 'KPIs' && <KpisSection />}
+      {tab === 'Users' && <UsersSection />}
+      {tab === 'Permissions' && <PermissionsSection />}
     </div>
   )
 }
@@ -1241,6 +1269,245 @@ function AttentionSheet({ item, onClose, onSaved }) {
 // data isn't editable here since it's a time series, not a single value).
 // ---------------------------------------------------------------------
 const FREQUENCIES = ['Weekly', 'Monthly', 'Quarterly', 'Annual']
+
+const ROLE_OPTIONS = [
+  ['', 'Pending (no access)'],
+  ['admin', 'Admin'],
+  ['pastor_mis', 'Pastor and MIS'],
+  ['church_management_team', 'Church Management Team'],
+  ['church_coordinator', 'Church Coordinator'],
+  ['finance', 'Finance'],
+  ['life_group_leader', 'Life Group Leader'],
+]
+
+function UsersSection() {
+  const [profiles, setProfiles] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [savingId, setSavingId] = useState(null)
+
+  async function load() {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchAllProfiles()
+      setProfiles(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function handleRoleChange(id, role) {
+    setSavingId(id)
+    try {
+      await updateProfileRole(id, role || null)
+      await load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  if (loading) return <div className="body-muted">Loading users...</div>
+  if (error) return <div style={{ color: 'var(--status-critical)' }}>{error}</div>
+
+  const pending = (profiles || []).filter((p) => !p.role)
+  const assigned = (profiles || []).filter((p) => p.role)
+
+  return (
+    <div>
+      {pending.length > 0 && (
+        <div className="card" style={{ marginBottom: 20, borderColor: 'var(--status-attention)' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Waiting for Approval ({pending.length})</h2>
+          <div className="body-muted" style={{ marginBottom: 14 }}>
+            These people have signed up but can't see anything until you assign a role.
+          </div>
+          <UserTable users={pending} onRoleChange={handleRoleChange} savingId={savingId} />
+        </div>
+      )}
+
+      <div className="card">
+        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>All Users</h2>
+        <UserTable users={assigned} onRoleChange={handleRoleChange} savingId={savingId} />
+      </div>
+    </div>
+  )
+}
+
+function UserTable({ users, onRoleChange, savingId }) {
+  if (users.length === 0) {
+    return <div className="body-muted">None yet.</div>
+  }
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
+        <thead>
+          <tr style={{ background: 'var(--surface-muted)' }}>
+            {['Name', 'Role'].map((h) => (
+              <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <tr key={u.id} style={{ borderTop: '1px solid var(--line)' }}>
+              <td style={{ padding: '10px 14px', fontSize: 13.5, fontWeight: 600 }}>{u.full_name || '(no name)'}</td>
+              <td style={{ padding: '10px 14px' }}>
+                <select
+                  value={u.role || ''}
+                  onChange={(e) => onRoleChange(u.id, e.target.value)}
+                  disabled={savingId === u.id}
+                  style={{ ...sheetInputStyle, width: 'auto', minWidth: 200 }}
+                >
+                  {ROLE_OPTIONS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+const PERMISSION_ROLES = ['admin', 'pastor_mis', 'church_management_team', 'church_coordinator', 'finance', 'life_group_leader']
+const PERMISSION_ROLE_LABELS = {
+  admin: 'Admin',
+  pastor_mis: 'Pastor and MIS',
+  church_management_team: 'Church Management Team',
+  church_coordinator: 'Church Coordinator',
+  finance: 'Finance',
+  life_group_leader: 'Life Group Leader',
+}
+const PERMISSION_RESOURCES = [
+  ['membership', 'Membership'],
+  ['life_groups', 'Life Groups'],
+  ['outreach', 'Outreach'],
+  ['financial', 'Financial'],
+  ['attention', 'Attention'],
+  ['kpis', 'KPI Center'],
+  ['reports', 'Reports'],
+  ['admin', 'Admin Console'],
+]
+
+function PermissionsSection() {
+  const [rows, setRows] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [savingKey, setSavingKey] = useState(null)
+
+  async function load() {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchAllRolePermissions()
+      setRows(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  function cellFor(role, resource) {
+    return (rows || []).find((r) => r.role === role && r.resource === resource)
+  }
+
+  async function toggle(role, resource, field, current) {
+    const key = `${role}:${resource}:${field}`
+    setSavingKey(key)
+    // Optimistic update so the checkbox responds instantly, then
+    // reconciled against the real save result.
+    setRows((prev) => prev.map((r) => (r.role === role && r.resource === resource ? { ...r, [field]: !current } : r)))
+    try {
+      await updateRolePermission(role, resource, field, !current)
+    } catch (err) {
+      setError(err.message)
+      await load() // revert to real state on failure
+    } finally {
+      setSavingKey(null)
+    }
+  }
+
+  if (loading) return <div className="body-muted">Loading permissions...</div>
+  if (error) return <div style={{ color: 'var(--status-critical)', marginBottom: 12 }}>{error}</div>
+
+  return (
+    <div className="card" style={{ padding: 8, overflowX: 'auto' }}>
+      <div style={{ padding: '12px 12px 4px' }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Permissions</h2>
+        <div className="body-muted" style={{ marginTop: 2 }}>
+          Toggle View and Edit access per role, per screen. Changes save immediately and take effect the next time
+          that person loads the app.
+        </div>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900, marginTop: 8 }}>
+        <thead>
+          <tr style={{ background: 'var(--surface-muted)' }}>
+            <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>Role</th>
+            {PERMISSION_RESOURCES.map(([, label]) => (
+              <th key={label} style={{ textAlign: 'center', padding: '10px 10px', fontSize: 11.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+                {label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {PERMISSION_ROLES.map((role) => (
+            <tr key={role} style={{ borderTop: '1px solid var(--line)' }}>
+              <td style={{ padding: '10px 14px', fontSize: 13.5, fontWeight: 700, whiteSpace: 'nowrap' }}>{PERMISSION_ROLE_LABELS[role]}</td>
+              {PERMISSION_RESOURCES.map(([resource]) => {
+                const cell = cellFor(role, resource)
+                if (!cell) return <td key={resource} />
+                return (
+                  <td key={resource} style={{ padding: '8px 10px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={cell.can_view}
+                          disabled={savingKey === `${role}:${resource}:can_view`}
+                          onChange={() => toggle(role, resource, 'can_view', cell.can_view)}
+                        />
+                        View
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10.5, cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={cell.can_edit}
+                          disabled={savingKey === `${role}:${resource}:can_edit`}
+                          onChange={() => toggle(role, resource, 'can_edit', cell.can_edit)}
+                        />
+                        Edit
+                      </label>
+                    </div>
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 function KpisSection() {
   const { data, refetch } = useAppData()
