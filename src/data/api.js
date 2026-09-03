@@ -594,3 +594,37 @@ export async function deleteKpi(id) {
   const { error } = await supabase.from('kpis').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }
+
+/** Fetches every profile (Admin/Pastor-only per RLS) — used by Admin Console's Users tab. */
+export async function fetchAllProfiles() {
+  requireSupabase()
+  const { data, error } = await supabase.from('profiles').select('id, full_name, role, created_at').order('created_at', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+/** Assigns (or changes) a user's role — the only way a pending user gains access. */
+export async function updateProfileRole(id, role) {
+  requireSupabase()
+  const { error } = await supabase.from('profiles').update({ role }).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+/** Fetches every (role, resource) permission row — Admin Console's Permissions matrix. */
+export async function fetchAllRolePermissions() {
+  requireSupabase()
+  const { data, error } = await supabase.from('role_permissions').select('role, resource, can_view, can_edit')
+  if (error) throw new Error(error.message)
+  return data
+}
+
+/** Toggles View or Edit for one (role, resource) cell in the Permissions matrix. */
+export async function updateRolePermission(role, resource, field, value) {
+  requireSupabase()
+  const { error } = await supabase
+    .from('role_permissions')
+    .update({ [field]: value })
+    .eq('role', role)
+    .eq('resource', resource)
+  if (error) throw new Error(error.message)
+}
