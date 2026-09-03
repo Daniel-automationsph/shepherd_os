@@ -6,22 +6,47 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null) // { id, full_name, role } — role is null while pending
+  const [permissions, setPermissions] = useState({}) // { [resource]: { can_view, can_edit } }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const loadProfile = useCallback(async (userId) => {
-    if (!supabase || !userId) {
-      setProfile(null)
+  const loadPermissions = useCallback(async (role) => {
+    if (!supabase || !role) {
+      setPermissions({})
       return
     }
-    const { data, error: err } = await supabase.from('profiles').select('id, full_name, role').eq('id', userId).single()
+    const { data, error: err } = await supabase.from('role_permissions').select('resource, can_view, can_edit').eq('role', role)
     if (err) {
       console.error(err)
-      setProfile(null)
+      setPermissions({})
       return
     }
-    setProfile(data)
+    const map = {}
+    for (const row of data) {
+      map[row.resource] = { can_view: row.can_view, can_edit: row.can_edit }
+    }
+    setPermissions(map)
   }, [])
+
+  const loadProfile = useCallback(
+    async (userId) => {
+      if (!supabase || !userId) {
+        setProfile(null)
+        setPermissions({})
+        return
+      }
+      const { data, error: err } = await supabase.from('profiles').select('id, full_name, role').eq('id', userId).single()
+      if (err) {
+        console.error(err)
+        setProfile(null)
+        setPermissions({})
+        return
+      }
+      setProfile(data)
+      await loadPermissions(data.role)
+    },
+    [loadPermissions],
+  )
 
   useEffect(() => {
     if (!supabase) {
@@ -45,6 +70,7 @@ export function AuthProvider({ children }) {
         await loadProfile(newSession.user.id)
       } else {
         setProfile(null)
+        setPermissions({})
       }
     })
 
@@ -91,10 +117,22 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }, [])
 
+  // Convenience helpers — canView('life_groups'), canEdit('financial') —
+  // so screens/nav don't need to know the {can_view, can_edit} shape.
+  function canView(resource) {
+    return !!permissions[resource]?.can_view
+  }
+  function canEdit(resource) {
+    return !!permissions[resource]?.can_edit
+  }
+
   const value = {
     session,
     user: session?.user ?? null,
     profile,
+    permissions,
+    canView,
+    canEdit,
     // "pending" = signed in, but no role assigned yet — sees nothing
     // until an Admin assigns one via Admin Console → Users.
     isPending: !!session && !!profile && profile.role == null,
