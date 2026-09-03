@@ -1,14 +1,16 @@
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import AchievementBar from '../components/AchievementBar'
-import TrendChart from '../components/TrendChart'
 import PyaGrowth from '../components/PyaGrowth'
-import { peso } from '../data/api'
+import PyaBarThenLineChart from '../components/PyaBarThenLineChart'
+import { peso, commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
+import { usePeriod } from '../context/PeriodContext'
 
 export default function Financial() {
   const { data } = useAppData()
-  const { financialKpi: kpi, financialCategories, areaFinancialStats } = data
+  const { financialKpi: kpi, numberOfTithersKpi, financialCategories, areaFinancialStats } = data
+  const { monthlySeries } = usePeriod()
 
   return (
     <div className="scroll-page">
@@ -16,7 +18,7 @@ export default function Financial() {
 
       <div className="card">
         <div style={{ display: 'flex' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Overall Giving — This Month</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Total Tithes and Offering — This Month</h2>
           <StatusBadge status={kpi.status} />
         </div>
         <div style={{ marginTop: 16 }}>
@@ -30,42 +32,65 @@ export default function Financial() {
             color={kpi.variance >= 0 ? 'var(--status-on-target)' : 'var(--status-critical)'}
           />
         </div>
+        <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
+          Monthly Trend — PYA (bar) then the real monthly trend (line)
+        </div>
+        <PyaBarThenLineChart
+          pya={monthlySeries?.total?.totalGiving?.pya || 0}
+          months={monthlySeries?.total?.totalGiving?.months || []}
+          color="var(--accent)"
+          valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`}
+        />
       </div>
 
-      <div className="two-col" style={{ marginTop: 20 }}>
-        <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>By Category</h2>
-          <div className="caption" style={{ marginBottom: 14 }}>
-            Bars compare Actual against PYA (Previous Year Accomplishment)
+      {numberOfTithersKpi && (
+        <div className="card" style={{ marginTop: 20 }}>
+          <div style={{ display: 'flex' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Number of Tithers — This Month</h2>
+            <StatusBadge status={numberOfTithersKpi.status} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {financialCategories.map((cat) => {
-              const growthPct = cat.target > 0 ? ((cat.actual - cat.target) / cat.target) * 100 : null
-              return (
-                <div key={cat.name}>
-                  <AchievementBar label={cat.name} target={cat.target} actual={cat.actual} formatter={peso} />
-                  {growthPct != null && (
-                    <div
-                      className="caption"
-                      style={{
-                        marginTop: 2,
-                        color: growthPct >= 0 ? 'var(--status-on-target)' : 'var(--status-critical)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {growthPct >= 0 ? '+' : ''}
-                      {growthPct.toFixed(1)}% vs PYA
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+          <div style={{ marginTop: 16 }}>
+            <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
           </div>
+          <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
+            Monthly Trend — PYA (bar) then the real monthly trend (line)
+          </div>
+          <PyaBarThenLineChart
+            pya={monthlySeries?.total?.numberOfTithers?.pya || 0}
+            months={monthlySeries?.total?.numberOfTithers?.months || []}
+            color="var(--primary)"
+            valueFormatter={(v) => commas(Math.round(v))}
+          />
         </div>
+      )}
 
-        <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Achievement Trend</h2>
-          <TrendChart points={kpi.trend} color="var(--accent)" valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`} />
+      <div className="card" style={{ marginTop: 20 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>By Category</h2>
+        <div className="caption" style={{ marginBottom: 14 }}>
+          Bars compare Actual against PYA (Previous Year Accomplishment)
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {financialCategories.map((cat) => {
+            const growthPct = cat.target > 0 ? ((cat.actual - cat.target) / cat.target) * 100 : null
+            return (
+              <div key={cat.name}>
+                <AchievementBar label={cat.name} target={cat.target} actual={cat.actual} formatter={peso} />
+                {growthPct != null && (
+                  <div
+                    className="caption"
+                    style={{
+                      marginTop: 2,
+                      color: growthPct >= 0 ? 'var(--status-on-target)' : 'var(--status-critical)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {growthPct >= 0 ? '+' : ''}
+                    {growthPct.toFixed(1)}% vs PYA
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
