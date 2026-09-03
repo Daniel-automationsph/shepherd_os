@@ -27,6 +27,7 @@ import {
   updateProfileRole,
   fetchAllRolePermissions,
   updateRolePermission,
+  sendNotification,
 } from '../data/api'
 
 // Each Admin Console tab maps to a resource — shown only if the current
@@ -1342,16 +1343,18 @@ function UsersSection() {
 }
 
 function UserTable({ users, onRoleChange, savingId }) {
+  const [messagingUser, setMessagingUser] = useState(null)
+
   if (users.length === 0) {
     return <div className="body-muted">None yet.</div>
   }
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
         <thead>
           <tr style={{ background: 'var(--surface-muted)' }}>
-            {['Name', 'Role'].map((h) => (
-              <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
+            {['Name', 'Role', ''].map((h, i) => (
+              <th key={i} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--ink-muted)' }}>
                 {h}
               </th>
             ))}
@@ -1375,11 +1378,75 @@ function UserTable({ users, onRoleChange, savingId }) {
                   ))}
                 </select>
               </td>
+              <td style={{ padding: '10px 14px' }}>
+                <button
+                  onClick={() => setMessagingUser(u)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    border: '1px solid var(--line)',
+                    background: 'var(--surface)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Message
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {messagingUser && <ComposeNotificationSheet recipient={messagingUser} onClose={() => setMessagingUser(null)} />}
     </div>
+  )
+}
+
+function ComposeNotificationSheet({ recipient, onClose }) {
+  const { user } = useAuth()
+  const [type, setType] = useState('message')
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function handleSend() {
+    if (!title.trim()) {
+      setError('Title is required.')
+      return
+    }
+    setSending(true)
+    setError(null)
+    try {
+      await sendNotification({ recipientId: recipient.id, senderId: user.id, type, title: title.trim(), body: body.trim() })
+      onClose()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <FormSheet title={`Message to ${recipient.full_name || '(no name)'}`} onClose={onClose}>
+      <Field label="Type">
+        <select value={type} onChange={(e) => setType(e.target.value)} style={sheetInputStyle}>
+          <option value="message">Message</option>
+          <option value="assignment">Assignment</option>
+        </select>
+      </Field>
+      <Field label="Title">
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={sheetInputStyle} placeholder="e.g. Please review Buli's attention item" />
+      </Field>
+      <Field label="Details (optional)">
+        <textarea value={body} onChange={(e) => setBody(e.target.value)} style={{ ...sheetInputStyle, minHeight: 80, resize: 'vertical' }} />
+      </Field>
+      {error && <div style={{ color: 'var(--status-critical)', fontSize: 13, marginBottom: 10 }}>{error}</div>}
+      <SheetButton onClick={handleSend} disabled={sending}>
+        {sending ? 'Sending...' : 'Send'}
+      </SheetButton>
+    </FormSheet>
   )
 }
 
