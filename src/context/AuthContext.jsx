@@ -133,9 +133,14 @@ export function AuthProvider({ children }) {
     permissions,
     canView,
     canEdit,
-    // "pending" = signed in, but no role assigned yet — sees nothing
-    // until an Admin assigns one via Admin Console → Users.
-    isPending: !!session && !!profile && profile.role == null,
+    // "pending" covers two cases that should look the same to the user:
+    // (1) their profile row exists but has no role assigned yet, or
+    // (2) their profile row doesn't exist at all — e.g. they signed up
+    // before the auto-create-profile trigger existed, so it never fired
+    // for them. Both mean "not ready to see the app yet," so both show
+    // the same waiting-for-approval screen instead of silently falling
+    // through into a broken app with no data.
+    isPending: !!session && (!profile || profile.role == null),
     role: profile?.role ?? null,
     loading,
     error,
