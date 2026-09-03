@@ -5,6 +5,8 @@ import { LoadingState, ErrorState } from './components/LoadingError'
 import { DataProvider, useAppData } from './context/DataContext'
 import { PeriodProvider } from './context/PeriodContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { NotificationProvider } from './context/NotificationContext'
+import NotificationBell from './components/NotificationBell'
 import Login from './screens/Login'
 import PendingApproval from './screens/PendingApproval'
 import Dashboard from './screens/Dashboard'
@@ -49,9 +51,11 @@ function AuthGate() {
   return (
     <DataProvider>
       <PeriodProvider>
-        <BrowserRouter>
-          <AppShell />
-        </BrowserRouter>
+        <NotificationProvider>
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </NotificationProvider>
       </PeriodProvider>
     </DataProvider>
   )
@@ -75,7 +79,10 @@ function AppShell() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       {!mobile && <Sidebar collapsed={collapsed} />}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: mobile ? '12px 16px 0' : '16px 24px 0' }}>
+          <NotificationBell />
+        </div>
         {loading ? (
           <LoadingState label="Loading Shepherd OS..." />
         ) : error ? (
