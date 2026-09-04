@@ -15,7 +15,7 @@ export default function PyaGrowth({ pya, actual, formatter = (v) => v }) {
         <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3, overflowWrap: 'break-word' }}>{formatter(pya)}</div>
       </div>
       <div style={{ minWidth: 0 }}>
-        <div className="label">Growth vs PYA</div>
+        <div className="label">AA vs PYA</div>
         <div
           style={{
             fontSize: 22,
