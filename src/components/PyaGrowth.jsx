@@ -6,21 +6,22 @@ export default function PyaGrowth({ pya, actual, formatter = (v) => v }) {
 
   return (
     <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div className="label">Actual</div>
-        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3 }}>{formatter(actual)}</div>
+        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3, overflowWrap: 'break-word' }}>{formatter(actual)}</div>
       </div>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div className="label">PYA (Previous Year Accomplishment)</div>
-        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3 }}>{formatter(pya)}</div>
+        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3, overflowWrap: 'break-word' }}>{formatter(pya)}</div>
       </div>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div className="label">Growth vs PYA</div>
         <div
           style={{
             fontSize: 22,
             fontWeight: 700,
             marginTop: 3,
+            overflowWrap: 'break-word',
             color: growthPct == null ? 'var(--ink)' : isUp ? 'var(--status-on-target)' : 'var(--status-critical)',
           }}
         >
