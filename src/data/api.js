@@ -288,7 +288,10 @@ export async function fetchAppData() {
     // Dashboard roll-ups
     lifeGroupAchievementPct: achievementPct(byName['Life Group Headcount'].actual, byName['Life Group Headcount'].target),
     firstTimerAchievementPct: achievementPct(byName['First Timers'].actual, byName['First Timers'].target),
-    financialAchievementPct: achievementPct(byName['Overall Giving'].actual, byName['Overall Giving'].target),
+    financialAchievementPct: achievementPct(
+      (byName['Total Tithes and Offering'] || byName['Overall Giving']).actual,
+      (byName['Total Tithes and Offering'] || byName['Overall Giving']).target,
+    ),
     reachAchievementPct: achievementPct(byName['Geographic Coverage'].actual, byName['Geographic Coverage'].target),
   }
 }
