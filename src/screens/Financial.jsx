@@ -33,11 +33,13 @@ export default function Financial() {
           />
         </div>
         <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — PYA (bar) then the real monthly trend (line)
+          Monthly Trend — PYA and Target (bars) then the running total (line)
         </div>
         <PyaBarThenLineChart
           pya={monthlySeries?.total?.totalGiving?.pya || 0}
+          target={(monthlySeries?.total?.totalGiving?.pya || 0) * 1.3}
           months={monthlySeries?.total?.totalGiving?.months || []}
+          cumulative
           color="var(--accent)"
           valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`}
         />
