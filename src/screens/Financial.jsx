@@ -12,6 +12,9 @@ export default function Financial() {
   const { financialKpi: kpi, numberOfTithersKpi, financialCategories, areaFinancialStats } = data
   const { monthlySeries } = usePeriod()
 
+  const growthTarget = (monthlySeries?.total?.totalGiving?.pya || 0) * 1.3
+  const remainingNeeded = growthTarget - kpi.actual
+
   return (
     <div className="scroll-page">
       <SectionHeader title="Financial Status" subtitle="Monitoring only — not a replacement for full accounting" />
@@ -32,12 +35,30 @@ export default function Financial() {
             color={kpi.variance >= 0 ? 'var(--status-on-target)' : 'var(--status-critical)'}
           />
         </div>
+
+        {growthTarget > 0 && (
+          <div style={{ marginTop: 18 }}>
+            <AchievementBar label="30% Growth Target (vs PYA)" target={growthTarget} actual={kpi.actual} formatter={peso} />
+            <div className="caption" style={{ marginTop: 6 }}>
+              {remainingNeeded > 0 ? (
+                <>
+                  {peso(remainingNeeded)} more needed to reach the growth target.
+                </>
+              ) : (
+                <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
+                  Target reached — {peso(Math.abs(remainingNeeded))} over.
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
           Monthly Trend — PYA and Target (bars) then the running total (line)
         </div>
         <PyaBarThenLineChart
           pya={monthlySeries?.total?.totalGiving?.pya || 0}
-          target={(monthlySeries?.total?.totalGiving?.pya || 0) * 1.3}
+          target={growthTarget}
           months={monthlySeries?.total?.totalGiving?.months || []}
           cumulative
           color="var(--accent)"
