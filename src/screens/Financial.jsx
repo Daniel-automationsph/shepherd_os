@@ -3,6 +3,7 @@ import StatusBadge from '../components/StatusBadge'
 import AchievementBar from '../components/AchievementBar'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarThenLineChart from '../components/PyaBarThenLineChart'
+import PyaTargetActualBars from '../components/PyaTargetActualBars'
 import { peso, commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
 import { usePeriod } from '../context/PeriodContext'
@@ -12,7 +13,8 @@ export default function Financial() {
   const { financialKpi: kpi, numberOfTithersKpi, financialCategories, areaFinancialStats } = data
   const { monthlySeries } = usePeriod()
 
-  const growthTarget = (monthlySeries?.total?.totalGiving?.pya || 0) * 1.3
+  const givingPya = monthlySeries?.total?.totalGiving?.pya || 0
+  const growthTarget = givingPya * 1.3
   const remainingNeeded = growthTarget - kpi.actual
 
   return (
@@ -29,27 +31,27 @@ export default function Financial() {
         </div>
 
         {growthTarget > 0 && (
-          <div style={{ marginTop: 18 }}>
-            <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
-            <div className="caption" style={{ marginTop: 6 }}>
-              {remainingNeeded > 0 ? (
-                <>
-                  {peso(remainingNeeded)} more needed to reach the growth target.
-                </>
-              ) : (
-                <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
-                  Target reached — {peso(Math.abs(remainingNeeded))} over.
-                </span>
-              )}
+          <div className="two-col-reverse" style={{ marginTop: 18, alignItems: 'center' }}>
+            <div>
+              <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
+              <div className="caption" style={{ marginTop: 6 }}>
+                {remainingNeeded > 0 ? (
+                  <>{peso(remainingNeeded)} more needed to reach the growth target.</>
+                ) : (
+                  <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
+                    Target reached — {peso(Math.abs(remainingNeeded))} over.
+                  </span>
+                )}
+              </div>
             </div>
+            <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} height={140} />
           </div>
         )}
 
         <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — PYA and Target (bars) then the running total (line)
+          Monthly Trend — Running Total vs Target
         </div>
         <PyaBarThenLineChart
-          pya={monthlySeries?.total?.totalGiving?.pya || 0}
           target={growthTarget}
           months={monthlySeries?.total?.totalGiving?.months || []}
           cumulative
@@ -64,14 +66,14 @@ export default function Financial() {
             <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Number of Tithers — This Month</h2>
             <StatusBadge status={numberOfTithersKpi.status} />
           </div>
-          <div style={{ marginTop: 16 }}>
+          <div className="two-col-reverse" style={{ marginTop: 16, alignItems: 'center' }}>
             <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
+            <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} height={140} />
           </div>
           <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-            Monthly Trend — PYA (bar) then the real monthly trend (line)
+            Monthly Trend
           </div>
           <PyaBarThenLineChart
-            pya={monthlySeries?.total?.numberOfTithers?.pya || 0}
             months={monthlySeries?.total?.numberOfTithers?.months || []}
             color="var(--primary)"
             valueFormatter={(v) => commas(Math.round(v))}
