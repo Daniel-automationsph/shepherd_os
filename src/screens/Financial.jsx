@@ -27,14 +27,6 @@ export default function Financial() {
         <div style={{ marginTop: 16 }}>
           <PyaGrowth pya={kpi.target} actual={kpi.actual} formatter={peso} />
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, marginTop: 16 }}>
-          <Fact label="Achievement" value={`${kpi.achievementPct.toFixed(1)}%`} />
-          <Fact
-            label="Variance"
-            value={`${kpi.variance >= 0 ? '+' : '-'}${peso(Math.abs(kpi.variance))}`}
-            color={kpi.variance >= 0 ? 'var(--status-on-target)' : 'var(--status-critical)'}
-          />
-        </div>
 
         {growthTarget > 0 && (
           <div style={{ marginTop: 18 }}>
@@ -164,15 +156,6 @@ export default function Financial() {
           </table>
         </div>
       )}
-    </div>
-  )
-}
-
-function Fact({ label, value, color }) {
-  return (
-    <div>
-      <div className="label">{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginTop: 3, color: color || 'var(--ink)' }}>{value}</div>
     </div>
   )
 }
