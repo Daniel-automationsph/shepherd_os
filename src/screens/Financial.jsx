@@ -44,7 +44,7 @@ export default function Financial() {
                 )}
               </div>
             </div>
-            <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} height={140} />
+            <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} />
           </div>
         )}
 
@@ -68,7 +68,7 @@ export default function Financial() {
           </div>
           <div className="two-col-reverse" style={{ marginTop: 16, alignItems: 'center' }}>
             <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
-            <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} height={140} />
+            <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} />
           </div>
           <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
             Monthly Trend
