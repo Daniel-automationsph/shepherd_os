@@ -31,8 +31,8 @@ export default function Financial() {
         </div>
 
         {growthTarget > 0 && (
-          <div className="two-col-reverse" style={{ marginTop: 18, alignItems: 'center' }}>
-            <div>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 18, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 220 }}>
               <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
               <div className="caption" style={{ marginTop: 6 }}>
                 {remainingNeeded > 0 ? (
@@ -44,7 +44,9 @@ export default function Financial() {
                 )}
               </div>
             </div>
-            <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} />
+            <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '10px 14px', flexShrink: 0 }}>
+              <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} />
+            </div>
           </div>
         )}
 
@@ -66,9 +68,13 @@ export default function Financial() {
             <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Number of Tithers — This Month</h2>
             <StatusBadge status={numberOfTithersKpi.status} />
           </div>
-          <div className="two-col-reverse" style={{ marginTop: 16, alignItems: 'center' }}>
-            <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
-            <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} />
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 16, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
+            </div>
+            <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '10px 14px', flexShrink: 0 }}>
+              <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} />
+            </div>
           </div>
           <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
             Monthly Trend
