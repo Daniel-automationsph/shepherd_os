@@ -41,7 +41,7 @@ export default function Financial() {
           months={monthlySeries?.total?.totalGiving?.months || []}
           cumulative
           color="var(--accent)"
-          valueFormatter={(v) => `₱${(v / 1000).toFixed(0)}K`}
+          valueFormatter={peso}
         />
       </div>
 
