@@ -38,7 +38,7 @@ export default function Financial() {
 
         {growthTarget > 0 && (
           <div style={{ marginTop: 18 }}>
-            <AchievementBar label="30% Growth Target (vs PYA)" target={growthTarget} actual={kpi.actual} formatter={peso} />
+            <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
             <div className="caption" style={{ marginTop: 6 }}>
               {remainingNeeded > 0 ? (
                 <>
