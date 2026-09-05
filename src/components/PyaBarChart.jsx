@@ -22,10 +22,10 @@ export default function PyaBarChart({ pya, months, color = 'var(--primary)', val
   return (
     <div style={{ margin: '8px 0 16px' }}>
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={data} margin={{ top: 6, right: 10, bottom: 0, left: -20 }}>
+        <BarChart data={data} margin={{ top: 6, right: 10, bottom: 0, left: 0 }}>
           <CartesianGrid stroke="var(--line)" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
-          <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={valueFormatter} width={44} />
+          <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={valueFormatter} width={56} />
           <ReferenceLine y={pya} stroke={pyaColor} strokeDasharray="4 4" strokeWidth={1.5} />
           <Tooltip
             formatter={(v, name, props) => [
