@@ -61,15 +61,25 @@ function monthLabel(year, monthIndex) {
   return new Date(year, monthIndex, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
 export default function DataEntry() {
   const { data } = useAppData()
+  const { role } = useAuth()
+  const isAdmin = ADMIN_ROLES.includes(role)
   const { areaPeopleStats } = data
   const churches = (areaPeopleStats || []).map((p) => ({ areaName: p.areaName, isMainChurch: p.isMainChurch }))
 
   const today = new Date()
-  const [year] = useState(today.getFullYear())
-  const [monthIndex] = useState(today.getMonth())
+  const [year, setYear] = useState(today.getFullYear())
+  const [monthIndex, setMonthIndex] = useState(today.getMonth())
   const weeks = sundaysInMonth(year, monthIndex)
+
+  // Admin-only: browse any month back to when the app started tracking
+  // data. Coordinators stay fixed on the current month — their workflow
+  // is entering this week's numbers, not roaming through history.
+  const YEAR_OPTIONS = []
+  for (let y = today.getFullYear(); y >= 2025; y--) YEAR_OPTIONS.push(y)
 
   return (
     <div className="scroll-page">
@@ -77,6 +87,36 @@ export default function DataEntry() {
         title="Data Entry"
         subtitle="Enter each week's real numbers as they happen — the monthly total is the sum of everything entered this month."
       />
+      {isAdmin && (
+        <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="label">Viewing</div>
+          <select value={monthIndex} onChange={(e) => setMonthIndex(Number(e.target.value))} style={{ ...sheetInputStyle, width: 'auto' }}>
+            {MONTH_NAMES.map((name, i) => (
+              <option key={i} value={i}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <select value={year} onChange={(e) => setYear(Number(e.target.value))} style={{ ...sheetInputStyle, width: 'auto' }}>
+            {YEAR_OPTIONS.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+          {(year !== today.getFullYear() || monthIndex !== today.getMonth()) && (
+            <button
+              onClick={() => {
+                setYear(today.getFullYear())
+                setMonthIndex(today.getMonth())
+              }}
+              style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+            >
+              Back to current month
+            </button>
+          )}
+        </div>
+      )}
       <RecentSubmissions />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 20 }}>
         {churches.map((church) => (
@@ -145,6 +185,16 @@ function ChurchCard({ church, weeks, year, monthIndex }) {
   const isAdmin = ADMIN_ROLES.includes(role)
 
   const [selectedWeek, setSelectedWeek] = useState(weeks.find((w) => isWithinDeadline(w)) || weeks[weeks.length - 1])
+
+  // weeks.find(...) above only runs once at mount — if an Admin switches
+  // to a different month, `weeks` (a prop) changes, but selectedWeek
+  // would otherwise stay stuck on a date from the OLD month that no
+  // longer matches anything in the new one. Reset it whenever the
+  // available weeks actually change.
+  useEffect(() => {
+    setSelectedWeek(weeks.find((w) => isWithinDeadline(w)) || weeks[weeks.length - 1])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weeks.join(',')])
   const [form, setForm] = useState(Object.fromEntries(FIELDS.map(([key]) => [key, ''])))
   const [entries, setEntries] = useState([])
   const [loadingEntries, setLoadingEntries] = useState(true)
