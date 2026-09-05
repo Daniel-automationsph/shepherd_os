@@ -280,6 +280,7 @@ button {
    the fixed bottom nav bar. */
 @media (max-width: 639px) {
   .scroll-page {
+    padding: 14px;
     padding-bottom: 84px;
   }
 }
