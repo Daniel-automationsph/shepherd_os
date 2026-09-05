@@ -48,7 +48,7 @@ export default function PyaBarThenLineChart({
     }
   })
 
-  const targetColor = '#c98a2c'
+  const targetColor = '#ffbb38'
   const showDualAxis = cumulative && showMonthly
 
   return (
