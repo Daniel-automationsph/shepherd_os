@@ -58,7 +58,7 @@ export default function OverlappingTargetBarChart({
       <BarChart data={data} barGap={0} barCategoryGap="22%" margin={{ top: 24, right: 10, bottom: 0, left: 12 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
-        <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={valueFormatter} width={44} />
+        <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={valueFormatter} width={56} />
         <Tooltip
           formatter={(v, name, props) => {
             if (name === 'Category 2 (remainder)') return [valueFormatter((props.payload.front || 0) + v), backgroundLabel]
