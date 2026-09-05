@@ -29,7 +29,8 @@ export default function MonthlyComparisonChart({
   if (!months || months.length === 0) return null
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={height}>
       <ComposedChart data={months} margin={{ top: 24, right: 10, bottom: 0, left: 0 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
@@ -61,5 +62,6 @@ export default function MonthlyComparisonChart({
         />
       </ComposedChart>
     </ResponsiveContainer>
+    </div>
   )
 }
