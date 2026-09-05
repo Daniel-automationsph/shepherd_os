@@ -310,7 +310,7 @@ export default function BarangayMap({
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ flex: 1, fontWeight: b.name === selectedName ? 700 : 400 }}>{b.name}</span>
+                <span style={{ flex: 1, minWidth: 0, fontWeight: b.name === selectedName ? 700 : 400, overflowWrap: 'break-word' }}>{b.name}</span>
               </div>
             ))}
           </div>
