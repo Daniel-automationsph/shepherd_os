@@ -74,7 +74,7 @@ function AppShell() {
   const collapsed = width < 900 && width >= 640
   const mobile = width < 640
   const { loading, error, refetch } = useAppData()
-  const { canEdit, canView } = useAuth()
+  const { canEdit, canView, signOut } = useAuth()
   const canAccessAdmin = RESOURCES.some((r) => canEdit(r))
   const canAccessDataEntry = canView('data_entry')
 
@@ -82,7 +82,28 @@ function AppShell() {
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       {!mobile && <Sidebar collapsed={collapsed} />}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: mobile ? '12px 16px 0' : '16px 24px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, padding: mobile ? '12px 16px 0' : '16px 24px 0' }}>
+          {mobile && (
+            // Sign Out normally lives in the sidebar, which is hidden on
+            // mobile entirely — without this, mobile users would have no
+            // way to sign out at all.
+            <button
+              onClick={signOut}
+              aria-label="Sign out"
+              style={{
+                padding: '7px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--line)',
+                background: 'var(--surface)',
+                color: 'var(--ink-muted)',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Sign out
+            </button>
+          )}
           <NotificationBell />
         </div>
         {loading ? (
@@ -151,6 +172,22 @@ function MobileNav() {
   // once there are more of them than fit on one row at once.
   const [windowStart, setWindowStart] = useState(0)
   const maxStart = Math.max(0, items.length - MOBILE_NAV_WINDOW_SIZE)
+
+  // Bug found via screenshot: windowStart is local state that never
+  // moved on its own — if the active page changed by any means other
+  // than tapping an icon already visible in the current window (e.g.
+  // landing on a page directly, or a page reached earlier from the
+  // desktop sidebar), the nav bar kept showing its last window and the
+  // wrong item highlighted as active. Snap the window to always include
+  // the actual current page whenever the route changes.
+  useEffect(() => {
+    setWindowStart((prev) => {
+      if (currentIndex >= prev && currentIndex < prev + MOBILE_NAV_WINDOW_SIZE) return prev
+      return Math.min(currentIndex, maxStart)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex])
+
   const clampedStart = Math.min(windowStart, maxStart)
   const visible = items.slice(clampedStart, clampedStart + MOBILE_NAV_WINDOW_SIZE)
   const canGoPrev = clampedStart > 0
