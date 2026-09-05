@@ -52,7 +52,8 @@ export default function PyaBarThenLineChart({
   const showDualAxis = cumulative && showMonthly
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 24, right: showDualAxis ? 16 : 16, bottom: 0, left: -10 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
@@ -103,5 +104,6 @@ export default function PyaBarThenLineChart({
         )}
       </LineChart>
     </ResponsiveContainer>
+    </div>
   )
 }
