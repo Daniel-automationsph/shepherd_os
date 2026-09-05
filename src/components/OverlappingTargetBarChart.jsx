@@ -54,7 +54,8 @@ export default function OverlappingTargetBarChart({
   ]
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} barGap={0} barCategoryGap="22%" margin={{ top: 24, right: 10, bottom: 0, left: 12 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 10.5, fill: 'var(--ink-faint)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} interval={0} angle={-35} textAnchor="end" height={50} />
@@ -101,6 +102,7 @@ export default function OverlappingTargetBarChart({
         <Bar dataKey="remainder" name="Category 2 (remainder)" stackId="ssaStack" fill={CATEGORY2_COLOR} barSize={40} radius={[3, 3, 0, 0]} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
+    </div>
   )
 }
 
