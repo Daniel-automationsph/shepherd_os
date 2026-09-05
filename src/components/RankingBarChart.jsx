@@ -23,7 +23,8 @@ export default function RankingBarChart({ data, valueFormatter = (v) => `${v.toF
   const chartHeight = height || Math.max(120, sorted.length * 44)
 
   return (
-    <ResponsiveContainer width="100%" height={chartHeight}>
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart data={sorted} layout="vertical" margin={{ top: 4, right: 40, bottom: 4, left: 4 }}>
         <CartesianGrid stroke="var(--line)" horizontal={false} />
         <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={valueFormatter} />
@@ -41,5 +42,6 @@ export default function RankingBarChart({ data, valueFormatter = (v) => `${v.toF
         </Bar>
       </BarChart>
     </ResponsiveContainer>
+    </div>
   )
 }
