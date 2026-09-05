@@ -22,58 +22,66 @@ export default function Financial() {
       <SectionHeader title="Financial Status" subtitle="Monitoring only — not a replacement for full accounting" />
 
       <div className="card">
-        <div style={{ display: 'flex' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Total Tithes and Offering — This Month</h2>
-          <StatusBadge status={kpi.status} />
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <PyaGrowth pya={kpi.target} actual={kpi.actual} formatter={peso} />
+        <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700 }}>Total Tithes and Offering — This Month</h2>
+            <div style={{ marginTop: 16 }}>
+              <PyaGrowth pya={kpi.target} actual={kpi.actual} formatter={peso} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <StatusBadge status={kpi.status} />
+            {growthTarget > 0 && (
+              <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '12px 16px' }}>
+                <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} maxHeight={130} />
+              </div>
+            )}
+          </div>
         </div>
 
         {growthTarget > 0 && (
-          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 18, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
-              <div className="caption" style={{ marginTop: 6 }}>
-                {remainingNeeded > 0 ? (
-                  <>{peso(remainingNeeded)} more needed to reach the growth target.</>
-                ) : (
-                  <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
-                    Target reached — {peso(Math.abs(remainingNeeded))} over.
-                  </span>
-                )}
-              </div>
-            </div>
-            <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '10px 14px', flexShrink: 0 }}>
-              <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} />
+          <div style={{ marginTop: 18 }}>
+            <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
+            <div className="caption" style={{ marginTop: 6 }}>
+              {remainingNeeded > 0 ? (
+                <>{peso(remainingNeeded)} more needed to reach the growth target.</>
+              ) : (
+                <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
+                  Target reached — {peso(Math.abs(remainingNeeded))} over.
+                </span>
+              )}
             </div>
           </div>
         )}
 
         <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — Running Total vs Target
+          Monthly Trend — Running Total vs Target, and Month-to-Month
         </div>
         <PyaBarThenLineChart
           target={growthTarget}
           months={monthlySeries?.total?.totalGiving?.months || []}
           cumulative
+          showMonthly
           color="var(--accent)"
+          monthlyColor="var(--primary)"
           valueFormatter={peso}
         />
       </div>
 
       {numberOfTithersKpi && (
         <div className="card" style={{ marginTop: 20 }}>
-          <div style={{ display: 'flex' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>Number of Tithers — This Month</h2>
-            <StatusBadge status={numberOfTithersKpi.status} />
-          </div>
-          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 220 }}>
-              <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
+              <h2 style={{ fontSize: 15, fontWeight: 700 }}>Number of Tithers — This Month</h2>
+              <div style={{ marginTop: 16 }}>
+                <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
+              </div>
             </div>
-            <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '10px 14px', flexShrink: 0 }}>
-              <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} />
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <StatusBadge status={numberOfTithersKpi.status} />
+              <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '12px 16px' }}>
+                <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} maxHeight={130} />
+              </div>
             </div>
           </div>
           <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
