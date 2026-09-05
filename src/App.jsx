@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import { LoadingState, ErrorState } from './components/LoadingError'
 import { DataProvider, useAppData } from './context/DataContext'
@@ -109,14 +109,48 @@ function AppShell() {
   )
 }
 
+// Same screen list and resource-gating as Sidebar.jsx — mobile users
+// should be able to reach every screen their role allows, not a
+// hardcoded subset. Previously this list only had 5 fixed items and
+// ignored permissions entirely, meaning Financial, KPI Center, Reports,
+// Data Entry, and Admin Console were unreachable on mobile regardless
+// of role.
+const MOBILE_NAV_ITEMS = [
+  { to: '/', label: 'Overview', icon: '▦', resource: null },
+  { to: '/people', label: 'Membership', icon: '◔', resource: 'membership' },
+  { to: '/life-groups', label: 'Life Groups', icon: '◈', resource: 'life_groups' },
+  { to: '/outreach', label: 'Outreach', icon: '⬡', resource: 'outreach' },
+  { to: '/financial', label: 'Financial', icon: '$', resource: 'financial' },
+  { to: '/kpi-center', label: 'KPI Center', icon: '◎', resource: 'kpis' },
+  { to: '/reports', label: 'Reports', icon: '▤', resource: 'reports' },
+  { to: '/attention', label: 'Attention', icon: '!', resource: 'attention' },
+  { to: '/data-entry', label: 'Data Entry', icon: '✎', resource: 'data_entry' },
+  { to: '/admin', label: 'Admin Console', icon: '⚙', resource: 'admin' },
+]
+
 function MobileNav() {
-  const items = [
-    ['/', '▦', 'Dashboard'],
-    ['/people', '◔', 'People'],
-    ['/life-groups', '◈', 'Groups'],
-    ['/outreach', '⬡', 'Outreach'],
-    ['/attention', '!', 'More'],
-  ]
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { canView, canEdit } = useAuth()
+
+  const items = MOBILE_NAV_ITEMS.filter((item) => {
+    if (item.resource === null) return true
+    if (item.to === '/admin') return RESOURCES.some((r) => canEdit(r))
+    return canView(item.resource)
+  })
+
+  const currentIndex = Math.max(
+    0,
+    items.findIndex((item) => item.to === location.pathname),
+  )
+  const current = items[currentIndex]
+  const goTo = (delta) => {
+    const nextIndex = (currentIndex + delta + items.length) % items.length
+    navigate(items[nextIndex].to)
+  }
+
+  if (!current) return null
+
   return (
     <div
       style={{
@@ -125,33 +159,31 @@ function MobileNav() {
         left: 0,
         right: 0,
         display: 'flex',
+        alignItems: 'center',
         background: 'var(--surface)',
         borderTop: '1px solid var(--line)',
-        padding: '6px 0 calc(6px + env(safe-area-inset-bottom, 0px))',
+        padding: '10px 6px calc(10px + env(safe-area-inset-bottom, 0px))',
         zIndex: 100,
       }}
     >
-      {items.map(([to, icon, label]) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={to === '/'}
-          style={({ isActive }) => ({
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            padding: '6px 0',
-            color: isActive ? 'var(--primary)' : 'var(--ink-muted)',
-            textDecoration: 'none',
-            fontSize: 10.5,
-          })}
-        >
-          <span style={{ fontSize: 18 }}>{icon}</span>
-          {label}
-        </NavLink>
-      ))}
+      <button
+        onClick={() => goTo(-1)}
+        aria-label="Previous screen"
+        style={{ background: 'none', border: 'none', fontSize: 20, padding: '8px 14px', color: 'var(--ink-muted)', cursor: 'pointer' }}
+      >
+        ‹
+      </button>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: 'var(--primary)' }}>
+        <span style={{ fontSize: 18 }}>{current.icon}</span>
+        <span style={{ fontSize: 12, fontWeight: 700 }}>{current.label}</span>
+      </div>
+      <button
+        onClick={() => goTo(1)}
+        aria-label="Next screen"
+        style={{ background: 'none', border: 'none', fontSize: 20, padding: '8px 14px', color: 'var(--ink-muted)', cursor: 'pointer' }}
+      >
+        ›
+      </button>
     </div>
   )
 }
