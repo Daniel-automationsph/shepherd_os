@@ -27,13 +27,13 @@
   --radius-sm: 10px;
   --radius-pill: 999px;
 
-  /* Type scale — consolidated to 4 sizes per UI typography best
-     practice ("use as few font sizes as possible"). This app is
-     interaction-heavy (dashboards, tables, forms), not text-heavy
-     (articles), so sizes sit at the lower/denser end of the
-     recommended ranges rather than long-form reading sizes. */
-  --font-header: 28px; /* page titles */
-  --font-subheader: 16px; /* card/section titles — hierarchy vs. body comes from weight (700) as much as size */
+  /* Type scale, loosely aligned to SF Pro's own scale (LargeTitle 34,
+     Title1 28, Body 17) but still consolidated per UI typography best
+     practice ("use as few font sizes as possible") and kept at the
+     denser end for an interaction-heavy dashboard rather than a
+     text-heavy reading app. */
+  --font-header: 34px; /* page titles — matches SF Pro's LargeTitle */
+  --font-subheader: 17px; /* card/section titles — matches SF Pro's Headline */
   --font-body: 14px; /* default — body text, form controls, most labels */
   --font-caption: 12px; /* secondary/muted text, ~2px below body per the guide */
 }
@@ -54,7 +54,11 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  /* -apple-system/BlinkMacSystemFont render as the REAL SF Pro on actual
+     Apple devices (Mac/iOS) — SF Pro itself can't be freely embedded as
+     a web font, so this is the authentic way to get it there, with
+     Inter as a close, solid fallback everywhere else. */
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
