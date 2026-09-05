@@ -3,7 +3,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function TrendChart({ points, color = 'var(--primary)', valueFormatter, height = 160 }) {
   if (!points || points.length === 0) return null
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={height}>
       <LineChart data={points} margin={{ top: 6, right: 10, bottom: 0, left: -20 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis
@@ -39,5 +40,6 @@ export default function TrendChart({ points, color = 'var(--primary)', valueForm
         />
       </LineChart>
     </ResponsiveContainer>
+    </div>
   )
 }
