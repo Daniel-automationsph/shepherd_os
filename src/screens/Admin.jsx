@@ -1467,6 +1467,7 @@ const PERMISSION_RESOURCES = [
   ['attention', 'Attention'],
   ['kpis', 'KPI Center'],
   ['reports', 'Reports'],
+  ['data_entry', 'Data Entry'],
   ['admin', 'Admin Console'],
 ]
 
