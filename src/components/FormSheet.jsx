@@ -58,7 +58,7 @@ export const sheetInputStyle = {
   borderRadius: 10,
   border: 'none',
   background: 'var(--surface-muted)',
-  fontSize: 14,
+  fontSize: 16, // minimum to prevent iOS Safari auto-zooming in on focus
   fontFamily: 'inherit',
 }
 
