@@ -15,10 +15,10 @@ export default function GroupedPyaBarChart({ metrics, formatter = (v) => Math.ro
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 24, right: 10, bottom: 0, left: -20 }}>
+      <BarChart data={data} margin={{ top: 24, right: 10, bottom: 0, left: 0 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--ink)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} />
-        <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={formatter} width={44} />
+        <YAxis tick={{ fontSize: 11, fill: 'var(--ink-faint)' }} axisLine={false} tickLine={false} tickFormatter={formatter} width={56} />
         <Tooltip
           formatter={(v) => formatter(v)}
           contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 8, fontSize: 12 }}
