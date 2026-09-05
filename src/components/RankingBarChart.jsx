@@ -5,9 +5,9 @@ import { statusFromAchievement } from '../data/api'
 // (same issue KpiStatCard.jsx works around) — so these are resolved hex
 // values matching the app's status colors, not var(--status-*) directly.
 const STATUS_COLORS = {
-  onTarget: '#2f7d4f',
-  attention: '#c98a2c',
-  critical: '#b3432d',
+  onTarget: '#00c781',
+  attention: '#ffbb38',
+  critical: '#ff4040',
 }
 
 /**
