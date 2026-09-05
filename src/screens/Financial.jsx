@@ -3,6 +3,7 @@ import StatusBadge from '../components/StatusBadge'
 import AchievementBar from '../components/AchievementBar'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarThenLineChart from '../components/PyaBarThenLineChart'
+import PyaBarChart from '../components/PyaBarChart'
 import PyaTargetActualBars from '../components/PyaTargetActualBars'
 import { peso, commas } from '../data/api'
 import { useAppData } from '../context/DataContext'
@@ -10,12 +11,18 @@ import { usePeriod } from '../context/PeriodContext'
 
 export default function Financial() {
   const { data } = useAppData()
-  const { financialKpi: kpi, numberOfTithersKpi, financialCategories, areaFinancialStats } = data
+  const { financialKpi: kpi, numberOfTithersKpi, financialCategories, areaFinancialStats, activeMembers } = data
   const { monthlySeries } = usePeriod()
 
   const givingPya = monthlySeries?.total?.totalGiving?.pya || 0
   const growthTarget = givingPya * 1.3
   const remainingNeeded = growthTarget - kpi.actual
+
+  // Same convention as Sunday Service Attendance's target on the
+  // Membership screen: 60% of Category 2's live (Admin-editable) Actual
+  // value, not a fixed PYA-based figure — so it updates automatically if
+  // Category 2 changes.
+  const tithersTarget = (activeMembers || 0) * 0.6
 
   return (
     <div className="scroll-page">
@@ -74,11 +81,22 @@ export default function Financial() {
               <div style={{ marginTop: 16 }}>
                 <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
               </div>
+              {tithersTarget > 0 && (
+                <div className="caption" style={{ marginTop: 10 }}>
+                  Target is set at 60% of Category 2 ({commas(activeMembers)}) — real figure: {commas(Math.round(tithersTarget))}.
+                </div>
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <StatusBadge status={numberOfTithersKpi.status} />
               <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '12px 16px' }}>
-                <PyaTargetActualBars pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} valueFormatter={commas} maxHeight={130} />
+                <PyaTargetActualBars
+                  pya={numberOfTithersKpi.target}
+                  target={tithersTarget > 0 ? tithersTarget : null}
+                  actual={numberOfTithersKpi.actual}
+                  valueFormatter={commas}
+                  maxHeight={130}
+                />
               </div>
             </div>
           </div>
@@ -86,7 +104,8 @@ export default function Financial() {
             <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
               Monthly Trend
             </div>
-            <PyaBarThenLineChart
+            <PyaBarChart
+              pya={numberOfTithersKpi.target}
               months={monthlySeries?.total?.numberOfTithers?.months || []}
               color="var(--primary)"
               valueFormatter={(v) => commas(Math.round(v))}
