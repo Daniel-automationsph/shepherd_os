@@ -1,9 +1,9 @@
 import { BarChart, Bar, Cell, LabelList, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-const CATEGORY2_COLOR = '#c9cdd3'
-const PYA_COLOR = '#2f7ed8'
-const TARGET_PASSED_COLOR = '#1fa864'
-const TARGET_MISSED_COLOR = '#e14b3f'
+const CATEGORY2_COLOR = '#e1e1e1'
+const PYA_COLOR = '#3c76f1'
+const TARGET_PASSED_COLOR = '#00c781'
+const TARGET_MISSED_COLOR = '#ff4040'
 
 /**
  * "SSA bar inside Category 2 bar": a genuinely STACKED bar, not two
