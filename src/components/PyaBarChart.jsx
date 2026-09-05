@@ -16,8 +16,8 @@ export default function PyaBarChart({ pya, months, color = 'var(--primary)', val
     ...months.map((m) => ({ label: m.label, value: m.value, isPya: false, unreported: m.unreported })),
   ]
 
-  const pyaColor = '#8095a8' // muted gray-blue — a reference baseline, not "this month's performance"
-  const unreportedColor = '#e4e8eb' // very light — reads as "no data yet," not "zero activity"
+  const pyaColor = '#969696' // muted gray-blue — a reference baseline, not "this month's performance"
+  const unreportedColor = '#e1e1e1' // very light — reads as "no data yet," not "zero activity"
 
   return (
     <div style={{ margin: '8px 0 16px' }}>
