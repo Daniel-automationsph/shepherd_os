@@ -21,9 +21,9 @@ export default function AttentionTile({ item }) {
       }}
     >
       <div style={{ color: meta.fg, fontSize: 16, lineHeight: '20px' }}>{ICONS[item.severity]}</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 14 }}>{item.title}</div>
-        <div className="body-muted" style={{ marginTop: 3 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, overflowWrap: 'break-word' }}>{item.title}</div>
+        <div className="body-muted" style={{ marginTop: 3, overflowWrap: 'break-word' }}>
           {item.detail}
         </div>
         <div className="caption" style={{ marginTop: 6 }}>
