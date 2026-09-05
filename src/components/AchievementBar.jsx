@@ -9,7 +9,7 @@ export default function AchievementBar({ label, target, actual, formatter = (v) 
   return (
     <div>
       <div style={{ display: 'flex', gap: 12 }}>
-        <div style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{label}</div>
+        <div style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 600, overflowWrap: 'break-word' }}>{label}</div>
         <div className="body-muted">
           {formatter(actual)} / {formatter(target)}
         </div>
