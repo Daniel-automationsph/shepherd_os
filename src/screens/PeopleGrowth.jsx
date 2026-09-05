@@ -4,6 +4,7 @@ import StatusBadge from '../components/StatusBadge'
 import PyaGrowth from '../components/PyaGrowth'
 import PyaBarChart from '../components/PyaBarChart'
 import ParentSubsetPanel from '../components/ParentSubsetPanel'
+import DonutChart from '../components/DonutChart'
 import OverlappingTargetBarChart from '../components/OverlappingTargetBarChart'
 import { LoadingSpinner } from '../components/Spinner'
 import { commas } from '../data/api'
@@ -47,20 +48,35 @@ export default function PeopleGrowth() {
 
       {/* --- Category 1 / Category 2 / Rate --- */}
       <SectionBlock title="Membership" subtitle="Category 2 is a subset of Category 1 — PYA is each category's own benchmark, not a third category">
-        <ParentSubsetPanel
-          parentLabel="Category 1 ( SSAM+LGAM+ SSAM/LGAM)"
-          parentActual={totalMembers}
-          parentPya={totalMembersPya}
-          parentMonths={monthlySeries?.total?.membership?.months}
-          subsetLabel="Category 2 ( SSAM+ SSAM/LGAM)"
-          subsetActual={activeMembers}
-          subsetPya={activeMembersPya}
-          subsetMonths={monthlySeries?.total?.activeMembership?.months}
-          rateLabel="Rate"
-          formatter={commas}
-          parentColor="#6b46c1"
-          subsetColor="#e07a3d"
-        />
+        <div className="two-col">
+          <ParentSubsetPanel
+            parentLabel="Category 1 ( SSAM+LGAM+ SSAM/LGAM)"
+            parentActual={totalMembers}
+            parentPya={totalMembersPya}
+            parentMonths={monthlySeries?.total?.membership?.months}
+            subsetLabel="Category 2 ( SSAM+ SSAM/LGAM)"
+            subsetActual={activeMembers}
+            subsetPya={activeMembersPya}
+            subsetMonths={monthlySeries?.total?.activeMembership?.months}
+            rateLabel="Rate"
+            formatter={commas}
+            parentColor="#6b46c1"
+            subsetColor="#e07a3d"
+          />
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="label" style={{ marginBottom: 12, alignSelf: 'flex-start' }}>
+              Category 2 vs Rest of Category 1
+            </div>
+            <DonutChart
+              segments={[
+                { label: 'Category 2', value: activeMembers, color: '#e07a3d' },
+                { label: 'Rest of Category 1', value: Math.max(0, totalMembers - activeMembers), color: '#d8d3c9' },
+              ]}
+              centerLabel="Category 2"
+              centerValue={commas(activeMembers)}
+            />
+          </div>
+        </div>
       </SectionBlock>
 
       {/* --- Sunday Service Attendance (with PYA + monthly trend) vs Category 2 (actual only, for reference) --- */}
