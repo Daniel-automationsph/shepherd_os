@@ -1,12 +1,19 @@
 const PYA_COLOR = '#8095a8'
 const TARGET_COLOR = '#c98a2c'
-const AA_COLOR = '#2f5233'
+const AA_MET_COLOR = '#1fa864'
+const AA_MISSED_COLOR = '#e14b3f'
 
 /**
  * Small reference visual: PYA, Target (optional), and AA side by side —
  * a quick "where do these three numbers stand relative to each other"
  * glance, kept separate from the monthly trend line so that chart isn't
  * sharing its scale with numbers of a very different magnitude.
+ *
+ * The AA bar is colored green if it meets/exceeds Target, red if it
+ * falls short — same at-a-glance status signal used elsewhere in the
+ * app, rather than a fixed neutral color regardless of performance.
+ * When no target is given, AA falls back to a neutral color since
+ * there's nothing to measure it against.
  *
  * Deliberately NOT a full Recharts chart — axes/grid/margins are all
  * overhead for something this simple, and made the original version
@@ -15,10 +22,11 @@ const AA_COLOR = '#2f5233'
  * fill a wide column the way a ResponsiveContainer would.
  */
 export default function PyaTargetActualBars({ pya, target, actual, valueFormatter = (v) => Math.round(v).toString(), maxHeight = 90 }) {
+  const aaColor = target != null ? (actual >= target ? AA_MET_COLOR : AA_MISSED_COLOR) : PYA_COLOR
   const bars = [
     { label: 'PYA', value: pya, color: PYA_COLOR },
     ...(target != null ? [{ label: 'Target', value: target, color: TARGET_COLOR }] : []),
-    { label: 'AA', value: actual, color: AA_COLOR },
+    { label: 'AA', value: actual, color: aaColor },
   ]
   const maxValue = Math.max(...bars.map((b) => b.value), 1)
 
