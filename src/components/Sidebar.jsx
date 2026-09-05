@@ -1,6 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+const SIDEBAR_BG = '#06183a' // Secondary-800, dark navy
+const SIDEBAR_LINE = 'rgba(255,255,255,0.1)'
+const SIDEBAR_TEXT_MUTED = '#97a6c4' // light blue-gray, readable against dark navy
+const SIDEBAR_ACTIVE_BG = 'rgba(60,118,241,0.25)' // Primary blue, translucent
+
 const NAV_ITEMS = [
   { to: '/', label: 'Overview', icon: '▦', end: true, resource: null }, // always shown to any assigned role
   { to: '/people', label: 'Membership', icon: '◔', resource: 'membership' },
@@ -37,8 +42,8 @@ export default function Sidebar({ collapsed }) {
     <div
       style={{
         width: collapsed ? 84 : 220,
-        background: 'var(--surface)',
-        borderRight: '1px solid var(--line)',
+        background: SIDEBAR_BG,
+        borderRight: `1px solid ${SIDEBAR_LINE}`,
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
@@ -61,12 +66,12 @@ export default function Sidebar({ collapsed }) {
         />
         {!collapsed && (
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.4 }}>SHEPHERD OS</div>
-            <div className="caption">JIL Pinamalayan</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.4, color: '#ffffff' }}>SHEPHERD OS</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: SIDEBAR_TEXT_MUTED }}>JIL Pinamalayan</div>
           </div>
         )}
       </div>
-      <hr className="divider" />
+      <hr style={{ border: 'none', borderTop: `1px solid ${SIDEBAR_LINE}`, margin: '4px 0' }} />
       <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {items.map((item) => (
           <NavLink
@@ -82,8 +87,8 @@ export default function Sidebar({ collapsed }) {
               padding: '11px 10px',
               borderRadius: 10,
               textDecoration: 'none',
-              color: isActive ? 'var(--primary)' : 'var(--ink-faint)',
-              background: isActive ? 'rgba(47,82,51,0.08)' : 'transparent',
+              color: isActive ? '#ffffff' : SIDEBAR_TEXT_MUTED,
+              background: isActive ? SIDEBAR_ACTIVE_BG : 'transparent',
               fontWeight: isActive ? 700 : 400,
               fontSize: 13.5,
             })}
@@ -104,8 +109,8 @@ export default function Sidebar({ collapsed }) {
               padding: '11px 10px',
               borderRadius: 10,
               textDecoration: 'none',
-              color: isActive ? 'var(--primary)' : 'var(--ink-faint)',
-              background: isActive ? 'rgba(47,82,51,0.08)' : 'transparent',
+              color: isActive ? '#ffffff' : SIDEBAR_TEXT_MUTED,
+              background: isActive ? SIDEBAR_ACTIVE_BG : 'transparent',
               fontWeight: isActive ? 700 : 400,
               fontSize: 13.5,
             })}
@@ -115,12 +120,12 @@ export default function Sidebar({ collapsed }) {
           </NavLink>
         )}
       </nav>
-      <hr className="divider" />
+      <hr style={{ border: 'none', borderTop: `1px solid ${SIDEBAR_LINE}`, margin: '4px 0' }} />
       <div style={{ padding: collapsed ? '12px 8px' : '12px 16px' }}>
         {!collapsed && (
           <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, overflowWrap: 'break-word' }}>{profile?.full_name || 'User'}</div>
-            <div className="caption">{ROLE_LABELS[role] || role}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, overflowWrap: 'break-word', color: '#ffffff' }}>{profile?.full_name || 'User'}</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: SIDEBAR_TEXT_MUTED }}>{ROLE_LABELS[role] || role}</div>
           </div>
         )}
         <button
@@ -129,8 +134,9 @@ export default function Sidebar({ collapsed }) {
             width: '100%',
             padding: '8px 0',
             borderRadius: 8,
-            border: '1px solid var(--line)',
-            background: 'var(--surface-muted)',
+            border: `1px solid ${SIDEBAR_LINE}`,
+            background: 'rgba(255,255,255,0.06)',
+            color: '#ffffff',
             fontSize: 12.5,
             fontWeight: 700,
             cursor: 'pointer',
