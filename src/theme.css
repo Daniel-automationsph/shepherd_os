@@ -48,6 +48,11 @@ html,
 body,
 #root {
   height: 100%;
+  /* Safety net: no single element should ever be able to push the whole
+     page wider than the viewport and force horizontal scrolling — this
+     is what "content clipped on the right, need to scroll to see it"
+     actually looks like to a user. */
+  overflow-x: hidden;
 }
 
 body {
@@ -213,6 +218,21 @@ button {
 }
 .kpi-row > * {
   min-width: 0;
+}
+
+@media (max-width: 480px) {
+  /* Defensive override: .grid is used all over the app with various
+     inline minmax() widths (200px, 220px, 320px, etc). Rather than
+     depend on auto-fit's computed behavior being exactly right at every
+     one of those widths on every phone, force genuine single-column
+     stacking below 480px everywhere this class is used — guarantees no
+     card can ever get cut off / overflow sideways on a phone, without
+     needing to hunt down and verify each individual usage separately.
+     kpi-row and attention-grid are deliberately excluded (they already
+     have their own, intentional 2-column mobile layout below). */
+  .grid:not(.kpi-row):not(.attention-grid) {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 639px) {
