@@ -32,7 +32,7 @@ export default function KpiStatCard({ label, achievementPct, subtitle, trend = [
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <Sparkline points={trend.map((t) => t.value)} color={barColor} />
         </div>
         <StatusBadge status={status} compact />
