@@ -14,7 +14,8 @@ export default function GroupedPyaBarChart({ metrics, formatter = (v) => Math.ro
   const data = metrics.map((m) => ({ label: m.label, actual: m.actual, pya: m.pya, color: m.color }))
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 24, right: 10, bottom: 0, left: 0 }}>
         <CartesianGrid stroke="var(--line)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--ink)' }} axisLine={{ stroke: 'var(--line)' }} tickLine={false} />
@@ -38,5 +39,6 @@ export default function GroupedPyaBarChart({ metrics, formatter = (v) => Math.ro
         </Bar>
       </BarChart>
     </ResponsiveContainer>
+    </div>
   )
 }
