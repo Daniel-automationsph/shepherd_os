@@ -84,7 +84,7 @@ export default function Sidebar({ collapsed }) {
               textDecoration: 'none',
               color: isActive ? 'var(--primary)' : 'var(--ink-faint)',
               background: isActive ? 'rgba(47,82,51,0.08)' : 'transparent',
-              fontWeight: isActive ? 700 : 500,
+              fontWeight: isActive ? 700 : 400,
               fontSize: 13.5,
             })}
           >
@@ -106,7 +106,7 @@ export default function Sidebar({ collapsed }) {
               textDecoration: 'none',
               color: isActive ? 'var(--primary)' : 'var(--ink-faint)',
               background: isActive ? 'rgba(47,82,51,0.08)' : 'transparent',
-              fontWeight: isActive ? 700 : 500,
+              fontWeight: isActive ? 700 : 400,
               fontSize: 13.5,
             })}
           >
