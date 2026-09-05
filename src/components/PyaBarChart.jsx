@@ -20,7 +20,7 @@ export default function PyaBarChart({ pya, months, color = 'var(--primary)', val
   const unreportedColor = '#e1e1e1' // very light — reads as "no data yet," not "zero activity"
 
   return (
-    <div style={{ margin: '8px 0 16px' }}>
+    <div style={{ margin: '8px 0 16px', width: '100%', minWidth: 0 }}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 6, right: 10, bottom: 0, left: 0 }}>
           <CartesianGrid stroke="var(--line)" vertical={false} />
