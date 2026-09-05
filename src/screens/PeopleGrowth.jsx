@@ -65,15 +65,15 @@ export default function PeopleGrowth() {
           />
           <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="label" style={{ marginBottom: 12, alignSelf: 'flex-start' }}>
-              Category 2 vs Rest of Category 1
+              Category 2 vs Category 1
             </div>
             <DonutChart
               segments={[
-                { label: 'Category 2', value: activeMembers, color: '#e07a3d' },
-                { label: 'Rest of Category 1', value: Math.max(0, totalMembers - activeMembers), color: '#d8d3c9' },
+                { label: 'Category 2', value: activeMembers, color: '#2f6fb3' },
+                { label: 'Category 1', value: Math.max(0, totalMembers - activeMembers), color: '#2f5233' },
               ]}
-              centerLabel="Category 2"
-              centerValue={commas(activeMembers)}
+              centerLabel="Category 1"
+              centerValue={commas(totalMembers)}
             />
           </div>
         </div>
