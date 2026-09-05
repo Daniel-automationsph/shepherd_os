@@ -18,6 +18,7 @@ import KpiCenter from './screens/KpiCenter'
 import Reports from './screens/Reports'
 import ManagementAttention from './screens/ManagementAttention'
 import Admin from './screens/Admin'
+import DataEntry from './screens/DataEntry'
 
 function useWindowWidth() {
   const [width, setWidth] = useState(window.innerWidth)
@@ -73,8 +74,9 @@ function AppShell() {
   const collapsed = width < 900 && width >= 640
   const mobile = width < 640
   const { loading, error, refetch } = useAppData()
-  const { canEdit } = useAuth()
+  const { canEdit, canView } = useAuth()
   const canAccessAdmin = RESOURCES.some((r) => canEdit(r))
+  const canAccessDataEntry = canView('data_entry')
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -97,6 +99,7 @@ function AppShell() {
             <Route path="/kpi-center" element={<KpiCenter />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/attention" element={<ManagementAttention />} />
+            <Route path="/data-entry" element={canAccessDataEntry ? <DataEntry /> : <Navigate to="/" replace />} />
             <Route path="/admin" element={canAccessAdmin ? <Admin /> : <Navigate to="/" replace />} />
           </Routes>
         )}
