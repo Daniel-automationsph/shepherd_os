@@ -129,8 +129,8 @@ export default function Dashboard() {
           <div>
             <DonutChart
               segments={[
-                { label: 'In Category 2', value: activeMembers, color: '#2f5233' },
-                { label: 'Not in Category 2', value: inactiveMembers, color: '#c98a2c' },
+                { label: 'In Category 2', value: activeMembers, color: '#3c76f1' },
+                { label: 'Not in Category 2', value: inactiveMembers, color: '#ffbb38' },
               ]}
               centerValue={commas(totalMembers)}
               centerLabel="Total"
