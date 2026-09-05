@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import { LoadingState, ErrorState } from './components/LoadingError'
 import { DataProvider, useAppData } from './context/DataContext'
@@ -128,9 +128,10 @@ const MOBILE_NAV_ITEMS = [
   { to: '/admin', label: 'Admin Console', icon: '⚙', resource: 'admin' },
 ]
 
+const MOBILE_NAV_WINDOW_SIZE = 5
+
 function MobileNav() {
   const location = useLocation()
-  const navigate = useNavigate()
   const { canView, canEdit } = useAuth()
 
   const items = MOBILE_NAV_ITEMS.filter((item) => {
@@ -143,13 +144,19 @@ function MobileNav() {
     0,
     items.findIndex((item) => item.to === location.pathname),
   )
-  const current = items[currentIndex]
-  const goTo = (delta) => {
-    const nextIndex = (currentIndex + delta + items.length) % items.length
-    navigate(items[nextIndex].to)
-  }
 
-  if (!current) return null
+  // Shows a WINDOW of icons (5 at a time, directly tappable) rather
+  // than just the single current screen — Prev/Next shifts which
+  // window of icons is visible, so every screen stays reachable even
+  // once there are more of them than fit on one row at once.
+  const [windowStart, setWindowStart] = useState(0)
+  const maxStart = Math.max(0, items.length - MOBILE_NAV_WINDOW_SIZE)
+  const clampedStart = Math.min(windowStart, maxStart)
+  const visible = items.slice(clampedStart, clampedStart + MOBILE_NAV_WINDOW_SIZE)
+  const canGoPrev = clampedStart > 0
+  const canGoNext = clampedStart < maxStart
+
+  if (items.length === 0) return null
 
   return (
     <div
@@ -162,25 +169,49 @@ function MobileNav() {
         alignItems: 'center',
         background: 'var(--surface)',
         borderTop: '1px solid var(--line)',
-        padding: '10px 6px calc(10px + env(safe-area-inset-bottom, 0px))',
+        padding: '6px 2px calc(6px + env(safe-area-inset-bottom, 0px))',
         zIndex: 100,
       }}
     >
       <button
-        onClick={() => goTo(-1)}
-        aria-label="Previous screen"
-        style={{ background: 'none', border: 'none', fontSize: 20, padding: '8px 14px', color: 'var(--ink-muted)', cursor: 'pointer' }}
+        onClick={() => setWindowStart((s) => Math.max(0, s - MOBILE_NAV_WINDOW_SIZE))}
+        disabled={!canGoPrev}
+        aria-label="Show previous screens"
+        style={{ background: 'none', border: 'none', fontSize: 18, padding: '8px 6px', color: canGoPrev ? 'var(--ink-muted)' : 'var(--line)', cursor: canGoPrev ? 'pointer' : 'default', flexShrink: 0 }}
       >
         ‹
       </button>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, color: 'var(--primary)' }}>
-        <span style={{ fontSize: 18 }}>{current.icon}</span>
-        <span style={{ fontSize: 12, fontWeight: 700 }}>{current.label}</span>
-      </div>
+      {visible.map((item) => {
+        const isActive = item.to === location.pathname
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === '/'}
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+              padding: '6px 0',
+              minWidth: 0,
+              color: isActive ? 'var(--primary)' : 'var(--ink-muted)',
+              textDecoration: 'none',
+              fontSize: 10,
+              fontWeight: isActive ? 700 : 400,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>{item.icon}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{item.label}</span>
+          </NavLink>
+        )
+      })}
       <button
-        onClick={() => goTo(1)}
-        aria-label="Next screen"
-        style={{ background: 'none', border: 'none', fontSize: 20, padding: '8px 14px', color: 'var(--ink-muted)', cursor: 'pointer' }}
+        onClick={() => setWindowStart((s) => Math.min(maxStart, s + MOBILE_NAV_WINDOW_SIZE))}
+        disabled={!canGoNext}
+        aria-label="Show more screens"
+        style={{ background: 'none', border: 'none', fontSize: 18, padding: '8px 6px', color: canGoNext ? 'var(--ink-muted)' : 'var(--line)', cursor: canGoNext ? 'pointer' : 'default', flexShrink: 0 }}
       >
         ›
       </button>
