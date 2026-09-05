@@ -1,7 +1,7 @@
-const PYA_COLOR = '#8095a8'
-const TARGET_COLOR = '#c98a2c'
-const AA_MET_COLOR = '#1fa864'
-const AA_MISSED_COLOR = '#e14b3f'
+const PYA_COLOR = '#969696'
+const TARGET_COLOR = '#ffbb38'
+const AA_MET_COLOR = '#00c781'
+const AA_MISSED_COLOR = '#ff4040'
 
 /**
  * Small reference visual: PYA, Target (optional), and AA side by side —
