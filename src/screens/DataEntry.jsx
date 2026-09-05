@@ -1,3 +1,4 @@
+import { LockIcon } from '../components/Icons'
 import { useEffect, useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import { sheetInputStyle } from '../components/FormSheet'
@@ -298,7 +299,7 @@ function ChurchCard({ church, weeks, year, monthIndex }) {
                 gap: 5,
               }}
             >
-              {weekLocked && <span style={{ fontSize: 11 }}>🔒</span>}
+              {weekLocked && <LockIcon size={11} />}
               <span>
                 Week {i + 1} — {new Date(w + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
@@ -320,7 +321,7 @@ function ChurchCard({ church, weeks, year, monthIndex }) {
                 marginBottom: 12,
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 4 }}>🔒 This week is locked</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}><LockIcon size={14} /> This week is locked</div>
               <div className="body-muted" style={{ fontSize: 13 }}>
                 The entry window for this week has closed. Contact an Admin if a correction is needed.
               </div>
@@ -384,8 +385,10 @@ function ChurchCard({ church, weeks, year, monthIndex }) {
                     <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 700, color: 'var(--ink-muted)' }}>Field</th>
                     {weeks.map((w, i) => (
                       <th key={w} style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 700, color: 'var(--ink-muted)' }}>
-                        {!isAdmin && !isWithinDeadline(w) && '🔒 '}
-                        Wk {i + 1}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          {!isAdmin && !isWithinDeadline(w) && <LockIcon size={10} />}
+                          Wk {i + 1}
+                        </span>
                       </th>
                     ))}
                     <th style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 700, color: 'var(--ink)' }}>Total</th>
