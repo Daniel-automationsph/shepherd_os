@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/kpi-center', label: 'KPI Center', icon: '◎', resource: 'kpis' },
   { to: '/reports', label: 'Reports', icon: '▤', resource: 'reports' },
   { to: '/attention', label: 'Attention', icon: '!', resource: 'attention' },
+  { to: '/data-entry', label: 'Data Entry', icon: '✎', resource: 'data_entry' },
 ]
 
 const ROLE_LABELS = {
