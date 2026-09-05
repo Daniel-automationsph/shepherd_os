@@ -44,9 +44,9 @@ export default function KpiStatCard({ label, achievementPct, subtitle, trend = [
 // Recharts needs a real color string, not a CSS var reference, for gradients.
 function getComputedColor(cssVar) {
   const map = {
-    'var(--status-on-target)': '#2f7d4f',
-    'var(--status-attention)': '#c98a2c',
-    'var(--status-critical)': '#b3432d',
+    'var(--status-on-target)': '#00c781',
+    'var(--status-attention)': '#ffbb38',
+    'var(--status-critical)': '#ff4040',
   }
-  return map[cssVar] || '#2f5233'
+  return map[cssVar] || '#3c76f1'
 }
