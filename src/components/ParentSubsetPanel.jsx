@@ -104,7 +104,8 @@ export default function ParentSubsetPanel({
       </div>
 
       {chartData.length > 0 && (
-        <ResponsiveContainer width="100%" height={260}>
+        <div style={{ width: '100%', minWidth: 0 }}>
+      <ResponsiveContainer width="100%" height={260}>
           <ComposedChart data={chartData} margin={{ top: 24, right: 10, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id="parentFill" x1="0" y1="0" x2="0" y2="1">
@@ -171,6 +172,7 @@ export default function ParentSubsetPanel({
             />
           </ComposedChart>
         </ResponsiveContainer>
+    </div>
       )}
 
       {(parentMonths || []).some((m) => m.unreported) && (
