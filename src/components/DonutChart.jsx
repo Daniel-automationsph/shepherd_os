@@ -12,7 +12,7 @@ export default function DonutChart({ segments, centerLabel, centerValue, height 
   const total = segments.reduce((s, seg) => s + seg.value, 0)
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           <Pie
