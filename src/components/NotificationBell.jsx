@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '../context/NotificationContext'
+import { BellIcon, PinIcon, ChatIcon } from './Icons'
 
 export default function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
@@ -33,7 +34,7 @@ export default function NotificationBell() {
           fontSize: 16,
         }}
       >
-        🔔
+        <BellIcon size={17} />
         {unreadCount > 0 && (
           <span
             style={{
@@ -105,7 +106,7 @@ export default function NotificationBell() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <span style={{ fontSize: 13, marginTop: 1 }}>{n.type === 'assignment' ? '📌' : '💬'}</span>
+                    <span style={{ marginTop: 1 }}>{n.type === 'assignment' ? <PinIcon size={13} /> : <ChatIcon size={13} />}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: n.read ? 600 : 700, overflowWrap: 'break-word' }}>{n.title}</div>
                       {n.body && (
