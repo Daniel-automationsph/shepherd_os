@@ -668,3 +668,112 @@ export async function sendNotification({ recipientId, senderId, type, title, bod
   })
   if (error) throw new Error(error.message)
 }
+
+// Maps each Data Entry field to where its monthly SUM actually lives —
+// used by recomputeMonthlyActual below to keep the existing monthly
+// Actual columns (that the rest of the app already reads) in sync
+// whenever a weekly entry changes.
+const FIELD_TABLE_MAP = {
+  attendance: { table: 'area_people_stats', column: 'attendance_actual', matchColumn: 'area_name' },
+  firstTimers: { table: 'area_people_stats', column: 'first_timers_actual', matchColumn: 'area_name' },
+  numberOfTithers: { table: 'area_people_stats', column: 'number_of_tithers_actual', matchColumn: 'area_name' },
+  tithes: { table: 'area_financial_stats', column: 'tithes_actual', matchColumn: 'area_name' },
+  offerings: { table: 'area_financial_stats', column: 'offerings_actual', matchColumn: 'area_name' },
+  pledges: { table: 'area_financial_stats', column: 'pledges_actual', matchColumn: 'area_name' },
+  missionOffering: { table: 'area_financial_stats', column: 'mission_offering_actual', matchColumn: 'area_name' },
+  support: { table: 'area_financial_stats', column: 'support_actual', matchColumn: 'area_name' },
+  lgAttendance: { table: 'life_groups', column: 'attendance_actual', matchColumn: 'name' },
+  lgFirstTimers: { table: 'life_groups', column: 'first_timers_actual', matchColumn: 'name' },
+}
+
+function monthRange(monthStart) {
+  const start = new Date(monthStart)
+  const end = new Date(start.getFullYear(), start.getMonth() + 1, 1)
+  const fmt = (d) => d.toISOString().slice(0, 10)
+  return { startStr: fmt(start), endStr: fmt(end) }
+}
+
+/** Fetches every weekly entry for one church within one calendar month, across all 10 fields. */
+export async function fetchWeeklyEntries(areaName, monthStart) {
+  requireSupabase()
+  const { startStr, endStr } = monthRange(monthStart)
+  const { data, error } = await supabase
+    .from('weekly_entries')
+    .select('id, field_key, week_start, value, submitted_by, updated_at')
+    .eq('area_name', areaName)
+    .gte('week_start', startStr)
+    .lt('week_start', endStr)
+    .order('week_start', { ascending: true })
+  if (error) throw new Error(error.message)
+  return attachSubmitterNames(data)
+}
+
+// weekly_entries.submitted_by references auth.users(id) directly, not
+// profiles(id) — even though profiles.id happens to hold the same
+// values, there's no direct foreign key PostgREST can use to join them
+// automatically. Fetching names as a separate lookup and merging in JS
+// avoids relying on relationship auto-detection across that gap.
+async function attachSubmitterNames(rows) {
+  const ids = [...new Set(rows.map((r) => r.submitted_by).filter(Boolean))]
+  if (ids.length === 0) return rows.map((r) => ({ ...r, submitted_by_name: null }))
+  const { data: people, error } = await supabase.from('profiles').select('id, full_name').in('id', ids)
+  if (error) throw new Error(error.message)
+  const nameById = Object.fromEntries(people.map((p) => [p.id, p.full_name]))
+  return rows.map((r) => ({ ...r, submitted_by_name: r.submitted_by ? nameById[r.submitted_by] || null : null }))
+}
+
+/** Shared activity log — the most recent submissions across EVERY church, visible to all users. */
+export async function fetchRecentSubmissions(limit = 20) {
+  requireSupabase()
+  const { data, error } = await supabase
+    .from('weekly_entries')
+    .select('id, area_name, field_key, week_start, value, submitted_by, updated_at')
+    .order('updated_at', { ascending: false })
+    .limit(limit)
+  if (error) throw new Error(error.message)
+  return attachSubmitterNames(data)
+}
+
+/** Saves (inserts or updates) one church's one field's one week — the actual source-of-truth write. */
+export async function upsertWeeklyEntry(areaName, fieldKey, weekStart, value) {
+  requireSupabase()
+  const { error } = await supabase
+    .from('weekly_entries')
+    .upsert({ area_name: areaName, field_key: fieldKey, week_start: weekStart, value: Number(value) || 0, updated_at: new Date().toISOString() }, { onConflict: 'area_name,field_key,week_start' })
+  if (error) throw new Error(error.message)
+}
+
+/**
+ * Sums every weekly entry for one church/field/month and writes that
+ * total into the existing monthly Actual column the rest of the app
+ * already reads — so Membership/Financial/Life Groups/Dashboard etc.
+ * keep working unchanged, seeing an always-up-to-date monthly total
+ * derived from real weekly entries instead of a manually-typed figure.
+ */
+export async function recomputeMonthlyActual(areaName, fieldKey, monthStart) {
+  requireSupabase()
+  const mapping = FIELD_TABLE_MAP[fieldKey]
+  if (!mapping) throw new Error(`Unknown Data Entry field: ${fieldKey}`)
+
+  const entries = await fetchWeeklyEntries(areaName, monthStart)
+  const total = entries.filter((e) => e.field_key === fieldKey).reduce((sum, e) => sum + Number(e.value), 0)
+
+  const { error } = await supabase.from(mapping.table).update({ [mapping.column]: total }).eq(mapping.matchColumn, areaName)
+  if (error) throw new Error(error.message)
+
+  // Total Giving is itself derived from the 4 individual categories —
+  // keep it in sync too whenever any of them changes via weekly entry.
+  if (['tithes', 'offerings', 'pledges', 'missionOffering'].includes(fieldKey)) {
+    const { data: row, error: readErr } = await supabase
+      .from('area_financial_stats')
+      .select('tithes_actual, offerings_actual, pledges_actual, mission_offering_actual')
+      .eq('area_name', areaName)
+      .single()
+    if (readErr) throw new Error(readErr.message)
+    const totalGiving = Number(row.tithes_actual) + Number(row.offerings_actual) + Number(row.pledges_actual) + Number(row.mission_offering_actual)
+    const { error: writeErr } = await supabase.from('area_financial_stats').update({ total_giving_actual: totalGiving }).eq('area_name', areaName)
+    if (writeErr) throw new Error(writeErr.message)
+  }
+
+  return total
+}
