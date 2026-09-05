@@ -223,6 +223,11 @@ button {
   .kpi-row .stat-large {
     font-size: 26px;
   }
+  .attention-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
 }
 
 /* Extra-narrow phones: even 2-up gets tight for currency figures — drop
