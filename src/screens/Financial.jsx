@@ -23,7 +23,7 @@ export default function Financial() {
 
       <div className="card">
         <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 220 }}>
+          <div style={{ flex: 1, minWidth: 220, border: '1px solid var(--line)', borderRadius: 10, padding: '16px 20px' }}>
             <h2 style={{ fontSize: 15, fontWeight: 700 }}>Total Tithes and Offering — This Month</h2>
             <div style={{ marginTop: 16 }}>
               <PyaGrowth pya={kpi.target} actual={kpi.actual} formatter={peso} />
@@ -54,20 +54,22 @@ export default function Financial() {
           </div>
         </div>
 
-        <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — Month-to-Month
+        <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '16px 20px', marginTop: 18 }}>
+          <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
+            Monthly Trend — Month-to-Month
+          </div>
+          <PyaBarThenLineChart
+            months={monthlySeries?.total?.totalGiving?.months || []}
+            color="var(--accent)"
+            valueFormatter={peso}
+          />
         </div>
-        <PyaBarThenLineChart
-          months={monthlySeries?.total?.totalGiving?.months || []}
-          color="var(--accent)"
-          valueFormatter={peso}
-        />
       </div>
 
       {numberOfTithersKpi && (
         <div className="card" style={{ marginTop: 20 }}>
           <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ flex: 1, minWidth: 220, border: '1px solid var(--line)', borderRadius: 10, padding: '16px 20px' }}>
               <h2 style={{ fontSize: 15, fontWeight: 700 }}>Number of Tithers — This Month</h2>
               <div style={{ marginTop: 16 }}>
                 <PyaGrowth pya={numberOfTithersKpi.target} actual={numberOfTithersKpi.actual} formatter={commas} />
@@ -80,14 +82,16 @@ export default function Financial() {
               </div>
             </div>
           </div>
-          <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-            Monthly Trend
+          <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '16px 20px', marginTop: 18 }}>
+            <div className="body-muted" style={{ marginBottom: 4, fontSize: 13 }}>
+              Monthly Trend
+            </div>
+            <PyaBarThenLineChart
+              months={monthlySeries?.total?.numberOfTithers?.months || []}
+              color="var(--primary)"
+              valueFormatter={(v) => commas(Math.round(v))}
+            />
           </div>
-          <PyaBarThenLineChart
-            months={monthlySeries?.total?.numberOfTithers?.months || []}
-            color="var(--primary)"
-            valueFormatter={(v) => commas(Math.round(v))}
-          />
         </div>
       )}
 
