@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SectionHeader from '../components/SectionHeader'
 import { sheetInputStyle } from '../components/FormSheet'
 import { useAppData } from '../context/DataContext'
-import { updateAreaPeopleStats, updateAreaFinancialStats, updateLifeGroup } from '../data/api'
+import { fetchWeeklyEntries, upsertWeeklyEntry, recomputeMonthlyActual, fetchRecentSubmissions } from '../data/api'
 
 // Each field maps to one of the 3 underlying tables — Data Entry writes
-// to the same real tables Admin Console does, just through a faster,
-// per-church, actual-figures-only form meant for Church Coordinators.
+// individual WEEKLY entries (the real source of truth), and the
+// existing monthly Actual columns are kept in sync by summing them.
 const FIELDS = [
   ['attendance', 'Sunday Service Attendance', 'people'],
   ['firstTimers', 'First Timers', 'people'],
@@ -19,24 +19,29 @@ const FIELDS = [
   ['lgAttendance', 'Life Group Attendance', 'lifeGroup'],
   ['lgFirstTimers', 'Life Group First Timer', 'lifeGroup'],
 ]
+const FIELD_LABELS = Object.fromEntries(FIELDS.map(([key, label]) => [key, label]))
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function monthLabel(dateStr) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
 
 export default function DataEntry() {
   const { data } = useAppData()
-  const { areaPeopleStats, areaFinancialStats, lifeGroups } = data
-
-  // Join the 3 tables by area name into one row per church, since this
-  // screen shows one combined card per church rather than separate
-  // sections per table the way Admin Console does.
-  const churches = (areaPeopleStats || []).map((people) => {
-    const financial = (areaFinancialStats || []).find((f) => f.areaName === people.areaName)
-    const lifeGroup = (lifeGroups || []).find((lg) => lg.name === people.areaName)
-    return { areaName: people.areaName, isMainChurch: people.isMainChurch, people, financial, lifeGroup }
-  })
+  const { areaPeopleStats } = data
+  const churches = (areaPeopleStats || []).map((p) => ({ areaName: p.areaName, isMainChurch: p.isMainChurch }))
 
   return (
     <div className="scroll-page">
-      <SectionHeader title="Data Entry" subtitle="Enter actual figures for each church — targets are managed in Admin Console." />
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+      <SectionHeader
+        title="Data Entry"
+        subtitle="Enter each week's real numbers as they happen — the monthly total is the sum of everything entered this month."
+      />
+      <RecentSubmissions />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 20 }}>
         {churches.map((church) => (
           <ChurchCard key={church.areaName} church={church} />
         ))}
@@ -45,25 +50,94 @@ export default function DataEntry() {
   )
 }
 
-function ChurchCard({ church }) {
-  const { refetch } = useAppData()
-  const { areaName, isMainChurch, people, financial, lifeGroup } = church
+function RecentSubmissions() {
+  const [rows, setRows] = useState(null)
+  const [error, setError] = useState(null)
 
-  const [form, setForm] = useState({
-    attendance: people?.attendanceActual ?? '',
-    firstTimers: people?.firstTimersActual ?? '',
-    tithes: financial?.tithesActual ?? '',
-    offerings: financial?.offeringsActual ?? '',
-    pledges: financial?.pledgesActual ?? '',
-    missionOffering: financial?.missionOfferingActual ?? '',
-    support: financial?.supportActual ?? '',
-    numberOfTithers: people?.numberOfTithersActual ?? '',
-    lgAttendance: lifeGroup?.attendanceActual ?? '',
-    lgFirstTimers: lifeGroup?.firstTimersActual ?? '',
-  })
+  useEffect(() => {
+    fetchRecentSubmissions(15)
+      .then(setRows)
+      .catch((err) => setError(err.message))
+  }, [])
+
+  if (error) return null // quietly skip the log rather than blocking the whole page over it
+  if (!rows) return <div className="body-muted">Loading recent activity...</div>
+
+  return (
+    <div className="card">
+      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Recent Submissions</h2>
+      <div className="caption" style={{ marginBottom: 12 }}>
+        Every entry across every church — visible to everyone, not just Admins.
+      </div>
+      {rows.length === 0 ? (
+        <div className="body-muted">No submissions yet.</div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640, fontSize: 12.5 }}>
+            <thead>
+              <tr style={{ background: 'var(--surface-muted)' }}>
+                {['Church', 'Field', 'Week Of', 'Value', 'Submitted By', 'When'].map((h) => (
+                  <th key={h} style={{ textAlign: 'left', padding: '8px 10px', fontWeight: 700, color: 'var(--ink-muted)' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} style={{ borderTop: '1px solid var(--line)' }}>
+                  <td style={{ padding: '6px 10px' }}>{r.area_name}</td>
+                  <td style={{ padding: '6px 10px' }}>{FIELD_LABELS[r.field_key] || r.field_key}</td>
+                  <td style={{ padding: '6px 10px' }}>{r.week_start}</td>
+                  <td style={{ padding: '6px 10px', fontWeight: 700 }}>{r.value}</td>
+                  <td style={{ padding: '6px 10px' }}>{r.submitted_by_name || 'Unknown'}</td>
+                  <td style={{ padding: '6px 10px', color: 'var(--ink-faint)' }}>{new Date(r.updated_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ChurchCard({ church }) {
+  const { areaName, isMainChurch } = church
+  const [weekDate, setWeekDate] = useState(todayStr())
+  const [form, setForm] = useState(Object.fromEntries(FIELDS.map(([key]) => [key, ''])))
+  const [entries, setEntries] = useState([])
+  const [loadingEntries, setLoadingEntries] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [savedFlash, setSavedFlash] = useState(false)
+
+  async function loadEntries() {
+    setLoadingEntries(true)
+    try {
+      const data = await fetchWeeklyEntries(areaName, weekDate)
+      setEntries(data)
+      // If an entry already exists for the selected week, pre-fill the
+      // form with it so re-opening a week you already entered shows
+      // what's there (and edits update it, rather than double-counting).
+      const forThisWeek = Object.fromEntries(FIELDS.map(([key]) => [key, '']))
+      for (const e of data) {
+        if (e.week_start === weekDate && forThisWeek[e.field_key] !== undefined) {
+          forThisWeek[e.field_key] = e.value
+        }
+      }
+      setForm(forThisWeek)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoadingEntries(false)
+    }
+  }
+
+  useEffect(() => {
+    loadEntries()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekDate])
 
   function set(key) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -73,45 +147,14 @@ function ChurchCard({ church }) {
     setSaving(true)
     setError(null)
     try {
-      if (people) {
-        await updateAreaPeopleStats(people.id, {
-          attendanceActual: form.attendance,
-          firstTimersActual: form.firstTimers,
-          numberOfTithersActual: form.numberOfTithers,
-        })
+      const changedFields = FIELDS.filter(([key]) => form[key] !== '').map(([key]) => key)
+      for (const key of changedFields) {
+        await upsertWeeklyEntry(areaName, key, weekDate, form[key])
       }
-      if (financial) {
-        await updateAreaFinancialStats(financial.id, {
-          tithesActual: form.tithes,
-          offeringsActual: form.offerings,
-          pledgesActual: form.pledges,
-          missionOfferingActual: form.missionOffering,
-          supportActual: form.support,
-        })
+      for (const key of changedFields) {
+        await recomputeMonthlyActual(areaName, key, weekDate)
       }
-      if (lifeGroup) {
-        // updateLifeGroup requires the full record (name/district/
-        // barangay/leader/headcount) even for a partial-looking update —
-        // it doesn't safely support omitting them, so the complete
-        // current record is passed through with just these 2 fields
-        // changed, to avoid accidentally clearing anything else.
-        await updateLifeGroup(lifeGroup.id, {
-          name: lifeGroup.name,
-          district: lifeGroup.district,
-          barangay: lifeGroup.barangay,
-          leader: lifeGroup.leader,
-          targetHeadcount: lifeGroup.targetHeadcount,
-          actualHeadcount: lifeGroup.actualHeadcount,
-          leadersTarget: lifeGroup.leadersTarget,
-          leadersActual: lifeGroup.leadersActual,
-          attendanceTarget: lifeGroup.attendanceTarget,
-          attendanceActual: form.lgAttendance,
-          firstTimersTarget: lifeGroup.firstTimersTarget,
-          firstTimersActual: form.lgFirstTimers,
-          demographics: lifeGroup.demographics,
-        })
-      }
-      await refetch()
+      await loadEntries()
       setSavedFlash(true)
       setTimeout(() => setSavedFlash(false), 2000)
     } catch (err) {
@@ -120,6 +163,10 @@ function ChurchCard({ church }) {
       setSaving(false)
     }
   }
+
+  // Group this month's entries by week, then by field, for the progress table.
+  const weeks = [...new Set(entries.map((e) => e.week_start))].sort()
+  const totals = Object.fromEntries(FIELDS.map(([key]) => [key, entries.filter((e) => e.field_key === key).reduce((s, e) => s + Number(e.value), 0)]))
 
   return (
     <div className="card">
@@ -139,38 +186,100 @@ function ChurchCard({ church }) {
         </span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
-        {FIELDS.map(([key, label]) => (
-          <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ flex: 1, fontSize: 13 }}>{label}</div>
-            <input type="number" value={form[key]} onChange={set(key)} style={{ ...sheetInputStyle, width: 110 }} />
+      <div className="two-col" style={{ marginTop: 14 }}>
+        {/* --- Weekly entry form --- */}
+        <div>
+          <div className="label" style={{ marginBottom: 6 }}>
+            Week Of
           </div>
-        ))}
+          <input type="date" value={weekDate} onChange={(e) => setWeekDate(e.target.value)} style={{ ...sheetInputStyle, marginBottom: 12 }} />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {FIELDS.map(([key, label, kind]) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1, fontSize: 13 }}>{label}</div>
+                <input
+                  type="number"
+                  step={kind === 'financial' ? 'any' : 1}
+                  value={form[key]}
+                  onChange={set(key)}
+                  style={{ ...sheetInputStyle, width: 110 }}
+                  placeholder="0"
+                />
+              </div>
+            ))}
+          </div>
+
+          {error && <div style={{ color: 'var(--status-critical)', fontSize: 13, marginTop: 10 }}>{error}</div>}
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              width: '100%',
+              marginTop: 16,
+              padding: '10px 0',
+              borderRadius: 8,
+              border: 'none',
+              background: savedFlash ? 'var(--status-on-target)' : 'var(--primary)',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: 13.5,
+              cursor: saving ? 'default' : 'pointer',
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            {saving ? 'Saving...' : savedFlash ? 'Saved ✓' : `Save Week of ${weekDate}`}
+          </button>
+        </div>
+
+        {/* --- Monthly progress --- */}
+        <div>
+          <div className="label" style={{ marginBottom: 6 }}>
+            {monthLabel(weekDate)} — Weekly Progress
+          </div>
+          {loadingEntries ? (
+            <div className="body-muted">Loading...</div>
+          ) : weeks.length === 0 ? (
+            <div className="body-muted">No weeks entered yet this month.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480, fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: 'var(--surface-muted)' }}>
+                    <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 700, color: 'var(--ink-muted)' }}>Field</th>
+                    {weeks.map((w) => (
+                      <th key={w} style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 700, color: 'var(--ink-muted)' }}>
+                        {new Date(w + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </th>
+                    ))}
+                    <th style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 700, color: 'var(--ink)' }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {FIELDS.map(([key, label]) => (
+                    <tr key={key} style={{ borderTop: '1px solid var(--line)' }}>
+                      <td style={{ padding: '6px 8px' }}>{label}</td>
+                      {weeks.map((w) => {
+                        const entry = entries.find((e) => e.field_key === key && e.week_start === w)
+                        const title = entry
+                          ? `${entry.submitted_by_name || 'Unknown'} — ${new Date(entry.updated_at).toLocaleString()}`
+                          : undefined
+                        return (
+                          <td key={w} title={title} style={{ padding: '6px 8px', textAlign: 'right', cursor: entry ? 'help' : 'default' }}>
+                            {entry ? entry.value : '—'}
+                          </td>
+                        )
+                      })}
+                      <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700 }}>{totals[key]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-
-      {error && (
-        <div style={{ color: 'var(--status-critical)', fontSize: 13, marginTop: 10 }}>{error}</div>
-      )}
-
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{
-          width: '100%',
-          marginTop: 16,
-          padding: '10px 0',
-          borderRadius: 8,
-          border: 'none',
-          background: savedFlash ? 'var(--status-on-target)' : 'var(--primary)',
-          color: 'white',
-          fontWeight: 700,
-          fontSize: 13.5,
-          cursor: saving ? 'default' : 'pointer',
-          opacity: saving ? 0.7 : 1,
-        }}
-      >
-        {saving ? 'Saving...' : savedFlash ? 'Saved ✓' : 'Save'}
-      </button>
     </div>
   )
 }
