@@ -1,3 +1,4 @@
+import { CalendarIcon } from './Icons'
 import { useState } from 'react'
 import { usePeriod } from '../context/PeriodContext'
 import { optionsFor } from '../data/periods'
@@ -59,7 +60,7 @@ export default function PeriodSelector() {
           cursor: 'pointer',
         }}
       >
-        <span style={{ fontSize: 14, display: 'flex' }}>{loading ? <Spinner size={14} color="var(--primary)" /> : '📅'}</span>
+        <span style={{ fontSize: 14, display: 'flex' }}>{loading ? <Spinner size={14} color="var(--primary)" /> : <CalendarIcon size={14} />}</span>
         {selected?.label}
         <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>{open ? '▲' : '▼'}</span>
       </button>
