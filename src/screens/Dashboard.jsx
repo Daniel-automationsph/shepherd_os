@@ -80,7 +80,7 @@ export default function Dashboard() {
           <div className="body-muted" style={{ marginTop: 4, marginBottom: 14 }}>
             Don&apos;t search for problems — see them.
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="attention-grid" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {attentionItems.slice(0, 4).map((item) => (
               <AttentionTile key={item.id ?? item.title} item={item} />
             ))}
