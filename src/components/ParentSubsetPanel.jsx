@@ -29,8 +29,8 @@ export default function ParentSubsetPanel({
   subsetMonths,
   rateLabel = 'Rate',
   formatter = (v) => Math.round(v).toString(),
-  parentColor = '#6b46c1',
-  subsetColor = '#e07a3d',
+  parentColor = '#082253',
+  subsetColor = '#3c76f1',
 }) {
   const parentGrowthPct = parentPya > 0 ? ((parentActual - parentPya) / parentPya) * 100 : null
   const subsetGrowthPct = subsetPya > 0 ? ((subsetActual - subsetPya) / subsetPya) * 100 : null
