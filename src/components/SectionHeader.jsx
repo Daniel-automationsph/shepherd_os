@@ -2,7 +2,7 @@ export default function SectionHeader({ title, subtitle, trailing }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, marginBottom: 20 }}>
       <div style={{ flex: 1 }}>
-        <h1 className="serif" style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.2 }}>
+        <h1 style={{ fontSize: 'var(--font-header)', fontWeight: 700, lineHeight: 1.2 }}>
           {title}
         </h1>
         {subtitle && (
