@@ -28,42 +28,38 @@ export default function Financial() {
             <div style={{ marginTop: 16 }}>
               <PyaGrowth pya={kpi.target} actual={kpi.actual} formatter={peso} />
             </div>
+
+            {growthTarget > 0 && (
+              <div style={{ marginTop: 18 }}>
+                <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
+                <div className="caption" style={{ marginTop: 6 }}>
+                  {remainingNeeded > 0 ? (
+                    <>{peso(remainingNeeded)} more needed to reach the growth target.</>
+                  ) : (
+                    <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
+                      Target reached — {peso(Math.abs(remainingNeeded))} over.
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <StatusBadge status={kpi.status} />
             {growthTarget > 0 && (
               <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '12px 16px' }}>
-                <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} maxHeight={130} />
+                <PyaTargetActualBars pya={givingPya} target={growthTarget} actual={kpi.actual} valueFormatter={peso} maxHeight={190} />
               </div>
             )}
           </div>
         </div>
 
-        {growthTarget > 0 && (
-          <div style={{ marginTop: 18 }}>
-            <AchievementBar label="30% Increase of PYA vs AA" target={growthTarget} actual={kpi.actual} formatter={peso} />
-            <div className="caption" style={{ marginTop: 6 }}>
-              {remainingNeeded > 0 ? (
-                <>{peso(remainingNeeded)} more needed to reach the growth target.</>
-              ) : (
-                <span style={{ color: 'var(--status-on-target)', fontWeight: 700 }}>
-                  Target reached — {peso(Math.abs(remainingNeeded))} over.
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="body-muted" style={{ marginTop: 18, marginBottom: 4, fontSize: 13 }}>
-          Monthly Trend — Running Total vs Target, and Month-to-Month
+          Monthly Trend — Month-to-Month
         </div>
         <PyaBarThenLineChart
-          target={growthTarget}
           months={monthlySeries?.total?.totalGiving?.months || []}
-          cumulative
-          showMonthly
           color="var(--accent)"
-          monthlyColor="var(--primary)"
           valueFormatter={peso}
         />
       </div>
