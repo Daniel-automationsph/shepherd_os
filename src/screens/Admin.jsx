@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { TrashIcon } from '../components/Icons'
 import SectionHeader from '../components/SectionHeader'
 import StatusBadge from '../components/StatusBadge'
 import FormSheet, { Field, sheetInputStyle, SheetButton } from '../components/FormSheet'
@@ -458,7 +459,7 @@ function LifeGroupsSection() {
                       ✏️
                     </IconButton>
                     <IconButton title="Delete" onClick={() => handleDelete(g)}>
-                      {deletingId === g.id ? '...' : '🗑️'}
+                      {deletingId === g.id ? '...' : <TrashIcon size={13} />}
                     </IconButton>
                   </div>
                 </td>
@@ -691,7 +692,7 @@ function FinancialSection() {
                       ✏️
                     </IconButton>
                     <IconButton title="Delete" onClick={() => handleDelete(c)}>
-                      {deletingId === c.id ? '...' : '🗑️'}
+                      {deletingId === c.id ? '...' : <TrashIcon size={13} />}
                     </IconButton>
                   </div>
                 </td>
@@ -1169,7 +1170,7 @@ function AttentionSection() {
                 ✏️
               </IconButton>
               <IconButton title="Delete" onClick={() => handleDelete(item)}>
-                {deletingId === item.id ? '...' : '🗑️'}
+                {deletingId === item.id ? '...' : <TrashIcon size={13} />}
               </IconButton>
             </div>
           </div>
@@ -1636,7 +1637,7 @@ function KpisSection() {
                       ✏️
                     </IconButton>
                     <IconButton title="Delete" onClick={() => handleDelete(k)}>
-                      {deletingId === k.id ? '...' : '🗑️'}
+                      {deletingId === k.id ? '...' : <TrashIcon size={13} />}
                     </IconButton>
                   </div>
                 </td>
