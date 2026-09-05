@@ -27,7 +27,7 @@ export default function PeopleGrowth() {
   } = data
 
   const maxCount = firstTimerFunnel[0].count
-  const funnelPalette = ['#2f5233', '#c98a2c', '#6e8fa3', '#8e5b45', '#4c7a50']
+  const funnelPalette = ['#3c76f1', '#ffbb38', '#6e8fa3', '#8e5b45', '#366ad9']
 
   // Church-wide Workers total isn't tracked as its own figure — it's
   // computed by summing the per-area Workers numbers (editable in Admin
@@ -60,8 +60,8 @@ export default function PeopleGrowth() {
             subsetMonths={monthlySeries?.total?.activeMembership?.months}
             rateLabel="Rate"
             formatter={commas}
-            parentColor="#6b46c1"
-            subsetColor="#e07a3d"
+            parentColor="#082253"
+            subsetColor="#3c76f1"
           />
           <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="label" style={{ marginBottom: 12, alignSelf: 'flex-start' }}>
@@ -70,7 +70,7 @@ export default function PeopleGrowth() {
             <DonutChart
               segments={[
                 { label: 'Category 2', value: activeMembers, color: '#2f6fb3' },
-                { label: 'Category 1', value: Math.max(0, totalMembers - activeMembers), color: '#2f5233' },
+                { label: 'Category 1', value: Math.max(0, totalMembers - activeMembers), color: '#3c76f1' },
               ]}
               centerLabel="Category 1"
               centerValue={commas(totalMembers)}
