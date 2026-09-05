@@ -70,6 +70,8 @@ function hydrateLifeGroup(row) {
     attendanceActual: Number(row.attendance_actual ?? 0),
     attendanceAchievementPct: attendancePct,
     attendanceStatus: statusFromAchievement(attendancePct),
+    firstTimersTarget: Number(row.first_timers_target ?? 0),
+    firstTimersActual: Number(row.first_timers_actual ?? 0),
     demographics: {
       men: { target: Number(row.men_target ?? 0), actual: Number(row.men_actual ?? 0) },
       women: { target: Number(row.women_target ?? 0), actual: Number(row.women_actual ?? 0) },
@@ -143,6 +145,8 @@ function hydrateAreaPeopleStats(row) {
     partTimeWorkers: Number(row.part_time_workers ?? 0),
     volunteerWorkers: Number(row.volunteer_workers ?? 0),
     totalWorkers: Number(row.total_workers ?? 0),
+    numberOfTithersTarget: Number(row.number_of_tithers_target ?? 0),
+    numberOfTithersActual: Number(row.number_of_tithers_actual ?? 0),
   }
 }
 
@@ -164,6 +168,8 @@ function hydrateAreaFinancialStats(row) {
     totalGivingActual: Number(row.total_giving_actual),
     totalGivingAchievementPct: totalPct,
     totalGivingStatus: statusFromAchievement(totalPct),
+    supportTarget: Number(row.support_target ?? 0),
+    supportActual: Number(row.support_actual ?? 0),
   }
 }
 
@@ -334,6 +340,8 @@ export async function updateAreaPeopleStats(
     partTimeWorkers,
     volunteerWorkers,
     totalWorkers,
+    numberOfTithersTarget,
+    numberOfTithersActual,
   },
 ) {
   requireSupabase()
@@ -350,6 +358,8 @@ export async function updateAreaPeopleStats(
   if (partTimeWorkers != null) payload.part_time_workers = Number(partTimeWorkers)
   if (volunteerWorkers != null) payload.volunteer_workers = Number(volunteerWorkers)
   if (totalWorkers != null) payload.total_workers = Number(totalWorkers)
+  if (numberOfTithersTarget != null) payload.number_of_tithers_target = Number(numberOfTithersTarget)
+  if (numberOfTithersActual != null) payload.number_of_tithers_actual = Number(numberOfTithersActual)
 
   const { error } = await supabase.from('area_people_stats').update(payload).eq('id', id)
   if (error) throw new Error(error.message)
@@ -368,6 +378,8 @@ export async function updateAreaFinancialStats(
     pledgesActual,
     totalGivingTarget,
     totalGivingActual,
+    supportTarget,
+    supportActual,
   },
 ) {
   requireSupabase()
@@ -382,6 +394,8 @@ export async function updateAreaFinancialStats(
   if (pledgesActual != null) payload.pledges_actual = Number(pledgesActual)
   if (totalGivingTarget != null) payload.total_giving_target = Number(totalGivingTarget)
   if (totalGivingActual != null) payload.total_giving_actual = Number(totalGivingActual)
+  if (supportTarget != null) payload.support_target = Number(supportTarget)
+  if (supportActual != null) payload.support_actual = Number(supportActual)
 
   const { error } = await supabase.from('area_financial_stats').update(payload).eq('id', id)
   if (error) throw new Error(error.message)
@@ -462,6 +476,8 @@ export async function updateLifeGroup(
     leadersActual,
     attendanceTarget,
     attendanceActual,
+    firstTimersTarget,
+    firstTimersActual,
     demographics,
   },
 ) {
@@ -478,6 +494,8 @@ export async function updateLifeGroup(
   if (leadersActual != null) payload.leaders_actual = Number(leadersActual)
   if (attendanceTarget != null) payload.attendance_target = Number(attendanceTarget)
   if (attendanceActual != null) payload.attendance_actual = Number(attendanceActual)
+  if (firstTimersTarget != null) payload.first_timers_target = Number(firstTimersTarget)
+  if (firstTimersActual != null) payload.first_timers_actual = Number(firstTimersActual)
   if (demographics) {
     if (demographics.men) {
       payload.men_target = Number(demographics.men.target) || 0
